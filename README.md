@@ -1,155 +1,157 @@
 # tmux Session Manager
 
-tmuxのセッション管理を視覚的かつ効率的に行うためのプラグイン。lazygitのようなポップアップUIを提供し、セッション・ウィンドウ・ペーンの階層的なナビゲーションとリアルタイムプレビューを実現します。
+[日本語版READMEはこちら](README_jp.md)
 
-## 特徴
+tmux Session Manager is a popup-based UI that lets you browse and manage tmux sessions, windows, and panes with a workflow similar to lazygit. It offers visual navigation, live previews, and fast switching powered by fzf.
 
-- 📝 **視覚的なセッション一覧**: アイコンと色分けで状態を直感的に表示
-- 🔍 **リアルタイムプレビュー**: セッション内容をその場で確認
-- ⚡ **高速切り替え**: fzfベースの快適な操作性
-- 🎨 **カスタマイズ可能**: Tokyo Night、Catppuccinなど複数のテーマ対応
-- 📊 **階層的ナビゲーション**: セッション→ウィンドウ→ペーンの3階層移動（実装予定）
+## Features
 
-## 必要要件
+- 📝 **Visual session list**: Icons and colors make states immediately recognizable.
+- 🔍 **Live preview**: Inspect session content without leaving the popup.
+- ⚡ **Fast switching**: Smooth interaction thanks to fzf.
+- 🎨 **Themeable**: Ships with Tokyo Night, Catppuccin, and the default tmux palette.
+- 📊 **Hierarchical navigation**: Move across the session → window → pane stack (pane view under active development).
 
-- tmux 3.2以上（popup機能必須）
-- fzf 0.30.0以上
-- bash 4.0以上
+## Requirements
 
-## インストール
+- tmux 3.2 or later (popup feature required)
+- fzf 0.30.0 or later
+- bash 4.0 or later
 
-### TPM（Tmux Plugin Manager）を使用
+## Installation
 
-`.tmux.conf`に以下を追加：
+### With TPM (Tmux Plugin Manager)
+
+Add the plugin to `.tmux.conf`:
 
 ```tmux
 set -g @plugin 'your-name/tmux-session-manager'
 ```
 
-tmux内で`prefix + I`を実行してインストール。
+Press `prefix + I` inside tmux to install.
 
-### 手動インストール
+### Manual installation
 
 ```bash
 git clone https://github.com/your-name/tmux-session-manager.git \
     ~/.tmux/plugins/tmux-session-manager
 ```
 
-`.tmux.conf`に以下を追加：
+Then add:
 
 ```tmux
 run-shell ~/.tmux/plugins/tmux-session-manager/tmux-session-manager.tmux
 ```
 
-設定を再読み込み：
+Reload your config:
 
 ```bash
 tmux source-file ~/.tmux.conf
 ```
 
-## 使い方
+## Usage
 
-### 基本操作
+### Basic key bindings
 
-デフォルトでは`Ctrl-s`でセッションスイッチャーを起動します。
+`Ctrl-s` launches the session switcher by default.
 
-**セッション一覧モード:**
-- `Enter`: セッション切り替え
-- `Space`: ウィンドウ詳細モードへ
-- `Ctrl-n`: 新規セッション作成
-- `Ctrl-r`: セッション名変更
-- `Ctrl-x`: セッション削除
-- `Ctrl-/`: プレビュー表示/非表示
-- `q`: 終了
+**Session list mode**
+- `Enter`: Switch to the selected session
+- `Space`: Drill down into windows
+- `Ctrl-n`: Create a new session
+- `Ctrl-r`: Rename a session
+- `Ctrl-x`: Delete a session
+- `Ctrl-/`: Toggle preview
+- `q`: Quit
 
-**ウィンドウ詳細モード:**
-- `Enter`: ウィンドウ切り替え
-- `Space`: ペーン詳細モードへ
-- `ESC`: セッション一覧へ戻る
-- `Ctrl-/`: プレビュー表示/非表示
-- `q`: 終了
+**Window detail mode**
+- `Enter`: Switch to the selected window
+- `Space`: Drill down into panes
+- `ESC`: Return to the session list
+- `Ctrl-/`: Toggle preview
+- `q`: Quit
 
-**ペーン詳細モード:**
-- `Enter`: ペーン切り替え
-- `ESC`: ウィンドウ詳細へ戻る
-- `Ctrl-/`: プレビュー表示/非表示
-- `q`: 終了
+**Pane detail mode**
+- `Enter`: Switch to the selected pane
+- `ESC`: Return to the window view
+- `Ctrl-/`: Toggle preview
+- `q`: Quit
 
-### 設定
+## Configuration
 
-`.tmux.conf`で以下の設定が可能です：
+All options are set in `.tmux.conf`:
 
 ```tmux
-# キーバインド変更
+# Change the key binding
 set -g @session-manager-key 'C-j'
 
-# テーマ変更
+# Switch theme (tokyonight | catppuccin | default)
 set -g @session-manager-theme 'catppuccin'
 
-# ポップアップサイズ調整
+# Popup size
 set -g @session-manager-popup-width '80%'
 set -g @session-manager-popup-height '70%'
 
-# ポップアップ枠線を無効化（tmux display-popupの-Bと同等）
+# Disable the tmux popup border (equivalent to display-popup -B)
 set -g @session-manager-popup-border 'off'
 
-# fzfの枠線スタイル（none/rounded/sharpなどfzfの--border値）
+# fzf border style (none | rounded | sharp | any value accepted by `fzf --border`)
 set -g @session-manager-fzf-border 'none'
 
-# プレビューウィンドウ幅
+# Preview width
 set -g @session-manager-preview-width '65'
 
-# デバッグモード
+# Debug logging
 set -g @session-manager-debug '1'
 ```
 
-`@session-manager-popup-border` は `off`, `false`, `0`, `none` のいずれかを指定すると枠線を描画しません。  
-`@session-manager-fzf-border` には `rounded`（デフォルト）, `sharp`, `none` など `fzf --border`で受け付ける値を指定できます。
+`@session-manager-popup-border` hides the popup frame when set to `off`, `false`, `0`, or `none`.  
+`@session-manager-fzf-border` forwards its value to `fzf --border`, so you can choose `rounded` (default), `sharp`, `none`, and more.
 
-## 利用可能なテーマ
+## Themes
 
-- `tokyonight` (デフォルト)
+- `tokyonight` (default)
 - `catppuccin`
-- `default` (tmuxのデフォルトカラー)
+- `default` (tmux stock colors)
 
-## アイコンの意味
+## Icon legend
 
-- 📝 緑: 現在のセッション
-- 📎 黄: アタッチ済みセッション
-- 💤 グレー: デタッチセッション
+- 📝 Green: current session
+- 📎 Yellow: attached session
+- 💤 Gray: detached session
 
-## 活動マーカー
+## Activity markers
 
-- 🔥: 5分以内に活動
-- ⚡: 1時間以内に活動
+- 🔥 Active within the last 5 minutes
+- ⚡ Active within the last hour
 
-## 開発状況
+## Project status
 
-### 実装済み機能
+### Implemented
 
-- ✅ Phase 1: 基盤構築（utils.sh, config.sh, プラグインエントリー）
-- ✅ Phase 2: コア機能（セッション一覧、プレビュー、基本切り替え）
-- ✅ Phase 3: 詳細機能（ウィンドウ・ペーンレベルの操作）
-- ✅ Phase 4: CRUD操作（セッション作成・削除・リネーム）
-- ✅ Phase 5: テーマシステム（Tokyo Night, Catppuccin, Default）
+- ✅ Phase 1: Foundations (utils.sh, config.sh, plugin entry point)
+- ✅ Phase 2: Core features (session list, preview, switching)
+- ✅ Phase 3: Advanced operations (window/pane actions)
+- ✅ Phase 4: CRUD operations (create, delete, rename sessions)
+- ✅ Phase 5: Theme system (Tokyo Night, Catppuccin, Default)
 
-### 実装予定機能
+### Planned
 
-- ⏳ Phase 6: テストと最適化（単体テスト、統合テスト、パフォーマンス測定）
+- ⏳ Phase 6: Testing & optimization (unit tests, integration tests, performance)
 
-## トラブルシューティング
+## Troubleshooting
 
-### ポップアップが表示されない
+### Popup does not appear
 
-tmuxのバージョンを確認してください：
+Verify your tmux version:
 
 ```bash
-tmux -V  # 3.2以上が必要
+tmux -V  # must be >= 3.2
 ```
 
-### fzfが見つからない
+### fzf is missing
 
-fzfをインストールしてください：
+Install fzf:
 
 ```bash
 # macOS
@@ -159,15 +161,15 @@ brew install fzf
 sudo apt install fzf
 ```
 
-## ライセンス
+## License
 
 MIT License
 
-## 関連リンク
+## Related links
 
-- [tmux公式](https://github.com/tmux/tmux)
+- [tmux](https://github.com/tmux/tmux)
 - [fzf](https://github.com/junegunn/fzf)
 
-## 作者
+## Authors
 
-tmux-session-manager開発チーム
+tmux-session-manager maintainers
