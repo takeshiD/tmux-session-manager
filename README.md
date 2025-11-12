@@ -90,12 +90,21 @@ set -g @session-manager-theme 'catppuccin'
 set -g @session-manager-popup-width '80%'
 set -g @session-manager-popup-height '70%'
 
+# ポップアップ枠線を無効化（tmux display-popupの-Bと同等）
+set -g @session-manager-popup-border 'off'
+
+# fzfの枠線スタイル（none/rounded/sharpなどfzfの--border値）
+set -g @session-manager-fzf-border 'none'
+
 # プレビューウィンドウ幅
 set -g @session-manager-preview-width '65'
 
 # デバッグモード
 set -g @session-manager-debug '1'
 ```
+
+`@session-manager-popup-border` は `off`, `false`, `0`, `none` のいずれかを指定すると枠線を描画しません。  
+`@session-manager-fzf-border` には `rounded`（デフォルト）, `sharp`, `none` など `fzf --border`で受け付ける値を指定できます。
 
 ## 利用可能なテーマ
 

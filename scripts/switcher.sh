@@ -40,7 +40,15 @@ main() {
     log_debug "Launching popup: ${POPUP_WIDTH}x${POPUP_HEIGHT}"
 
     # tmux popupでsession-modeを起動
+    local popup_border_flag=()
+    case "${POPUP_BORDER,,}" in
+        0|false|off|none|disable|disabled|no)
+            popup_border_flag+=(-B)
+            ;;
+    esac
+
     if ! tmux display-popup \
+        "${popup_border_flag[@]}" \
         -E \
         -w "$POPUP_WIDTH" \
         -h "$POPUP_HEIGHT" \

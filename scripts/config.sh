@@ -12,6 +12,10 @@ readonly DEFAULT_POPUP_WIDTH="95%"
 readonly DEFAULT_POPUP_HEIGHT="90%"
 readonly DEFAULT_PREVIEW_WIDTH="65"
 
+# ポップアップ/枠線
+readonly DEFAULT_POPUP_BORDER="on"
+readonly DEFAULT_FZF_BORDER="rounded"
+
 # カラーテーマ
 readonly DEFAULT_THEME="tokyonight"
 
@@ -50,6 +54,8 @@ get_tmux_option() {
 export POPUP_WIDTH=$(get_tmux_option "session-manager-popup-width" "$DEFAULT_POPUP_WIDTH")
 export POPUP_HEIGHT=$(get_tmux_option "session-manager-popup-height" "$DEFAULT_POPUP_HEIGHT")
 export PREVIEW_WIDTH=$(get_tmux_option "session-manager-preview-width" "$DEFAULT_PREVIEW_WIDTH")
+export POPUP_BORDER=$(get_tmux_option "session-manager-popup-border" "$DEFAULT_POPUP_BORDER")
+export FZF_BORDER_STYLE=$(get_tmux_option "session-manager-fzf-border" "$DEFAULT_FZF_BORDER")
 
 # テーマ設定
 export THEME=$(get_tmux_option "session-manager-theme" "$DEFAULT_THEME")
@@ -102,8 +108,18 @@ get_theme_colors() {
 get_base_fzf_options() {
     local theme_colors
     theme_colors=$(get_theme_colors "$THEME")
+    local border_option
 
-    echo "--ansi --border=rounded --height=100% $theme_colors"
+    case "${FZF_BORDER_STYLE,,}" in
+        ""|none|0|false|off)
+            border_option="--border=none"
+            ;;
+        *)
+            border_option="--border=${FZF_BORDER_STYLE}"
+            ;;
+    esac
+
+    echo "--ansi ${border_option} --height=100% $theme_colors"
 }
 
 # 関数名: get_preview_window_options
