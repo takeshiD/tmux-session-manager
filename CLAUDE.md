@@ -94,29 +94,29 @@ tmuxのセッション管理を視覚的かつ効率的に行うためのプラ�
 
 #### 性能要件
 
-| ID | 項目 | 要件 |
-|----|------|------|
-| NF-001 | 起動時間 | ポップアップ表示まで0.3秒以内 |
-| NF-002 | プレビュー生成 | ペーン内容取得まで0.5秒以内 |
-| NF-003 | リスト更新 | セッション一覧更新0.2秒以内 |
-| NF-004 | メモリ使用量 | 10MB以下 |
+| ID | 項目 | 要件 | 検証方法 |
+|----|------|------|-----------|
+| NF-001 | 起動時間 | ポップアップ表示まで0.3秒以内 | `tmux display-popup`起動を100回計測し、`/usr/bin/time -p`の平均をCIに保存 |
+| NF-002 | プレビュー生成 | ペーン内容取得まで0.5秒以内 | `scripts/preview-session.sh`を高負荷セッションで実行し、ms単位のログを取得 |
+| NF-003 | リスト更新 | セッション一覧更新0.2秒以内 | `scripts/session-list.sh`を`time`付きで実行し、結果をテストログへ出力 |
+| NF-004 | メモリ使用量 | 10MB以下 | `/usr/bin/time -v`(Linux)/`time -l`(macOS)で最大常駐サイズを収集し、閾値超過で失敗 |
 
 #### 互換性要件
 
-| ID | 項目 | 要件 |
-|----|------|------|
-| NF-101 | tmuxバージョン | 3.2以上（popup機能必須） |
-| NF-102 | OS | Linux / macOS |
-| NF-103 | シェル | bash 4.0以上 |
-| NF-104 | 依存ツール | fzf 0.30以上 |
+| ID | 項目 | 要件 | 検証方法 |
+|----|------|------|-----------|
+| NF-101 | tmuxバージョン | 3.2以上（popup機能必須） | `tmux -V`をCIで確認し、version compare関数でチェック |
+| NF-102 | OS | Linux / macOS | GitHub ActionsでUbuntu/macOS matrix統合テストを実行 |
+| NF-103 | シェル | bash 4.0以上 | `bash --version`を起動ログへ出力し、未満ならFATAL終了 |
+| NF-104 | 依存ツール | fzf 0.30以上 | `fzf --version`の結果をログし、条件未達はエラー表示 |
 
 #### 保守性要件
 
-| ID | 項目 | 要件 |
-|----|------|------|
-| NF-201 | コード可読性 | 関数単位で分割、コメント必須 |
-| NF-202 | 設定の柔軟性 | tmux.confで全設定変更可能 |
-| NF-203 | エラーハンドリング | 全エラーケースでgraceful degradation |
+| ID | 項目 | 要件 | 検証方法 |
+|----|------|------|-----------|
+| NF-201 | コード可読性 | 関数単位で分割、コメント必須 | `shellcheck` CIとPRレビュー Checklistで確認 |
+| NF-202 | 設定の柔軟性 | tmux.confで全設定変更可能 | `.tmux.conf`カスタム例で統合テストを実行し、設定が反映されるか検証 |
+| NF-203 | エラーハンドリング | 全エラーケースでgraceful degradation | エラーシナリオ自動テスト＋`TMUX_SESSION_SWITCHER_DEBUG=1`でログにWARN/ERRORが出ることを検証 |
 
 ---
 
@@ -476,6 +476,8 @@ Session Mode
 --color="marker:#a6e3a1,spinner:#a6e3a1,header:#a6e3a1"
 ```
 
+※ テーマファイルが見つからない場合は`themes/default.sh`を自動読み込みし、ログにWARNを出力する。
+
 ### 5.3 キーバインド一覧
 
 #### 共通操作
@@ -714,7 +716,7 @@ tmux-session-switcher/
 │   ├── switcher.sh                    # メインエントリーポイント
 │   ├── session-mode.sh                # セッション選択モード
 │   ├── detail-mode.sh                 # ウィンドウ選択モード
-│   ├── pane-mode.sh                   # ペーン選択モード（将来実装時に追加）
+│   ├── pane-mode.sh                   # ペーン選択モード
 │   │
 │   ├── session-list.sh                # セッション一覧生成
 │   ├── window-list.sh                 # ウィンドウ一覧生成
@@ -725,7 +727,12 @@ tmux-session-switcher/
 │   ├── preview-pane.sh                # ペーンプレビュー
 │   │
 │   ├── actions.sh                     # CRUD操作
-│   └── utils.sh                       # 共通ユーティリティ（将来）
+│   └── utils.sh                       # 共通ユーティリティ
+│
+├── themes/                            # カラーテーマ定義
+│   ├── default.sh
+│   ├── tokyonight.sh
+│   └── catppuccin.sh
 │
 ├── docs/
 │   ├── SPECIFICATION.md               # 本仕様書
@@ -1316,6 +1323,8 @@ set -g @session-switcher-key 'C-j'
 
 ### 11.1 単体テスト
 
+※ すべてのテストは`tmux -L session-switcher-test`など専用ソケットのtmuxサーバー上で実行し、`test-session-`接頭辞のみを安全に削除する。
+
 #### session-list.shのテスト
 ```bash
 #!/usr/bin/env bash
@@ -1741,4 +1750,3 @@ A: 現在はデフォルト/TokyoNight/Catppuccinのみですが、将来的に�
 | バージョン | 日付 | 変更内容 | 担当者 |
 |-----------|------|---------|--------|
 | 1.0 | 2024-XX-XX | 初版作成 | - |
-
