@@ -13,7 +13,7 @@ readonly CURRENT_DIR
 # ====================================================================
 
 # デフォルトキーバインド
-readonly DEFAULT_KEY_BINDING="C-s"
+readonly DEFAULT_KEY_BINDING="C-m"
 
 # 関数名: get_tmux_option
 # 説明: tmux.confからオプション値を取得

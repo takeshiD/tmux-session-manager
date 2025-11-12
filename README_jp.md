@@ -25,7 +25,7 @@ tmuxのセッション管理を視覚的かつ効率的に行うためのプラ�
 `.tmux.conf`に以下を追加：
 
 ```tmux
-set -g @plugin 'your-name/tmux-session-manager'
+set -g @plugin 'takeshiD/tmux-session-manager'
 ```
 
 tmux内で`prefix + I`を実行してインストール。
@@ -82,8 +82,8 @@ tmux source-file ~/.tmux.conf
 `.tmux.conf`で以下の設定が可能です：
 
 ```tmux
-# キーバインド変更
-set -g @session-manager-key 'C-j'
+# キーバインド変更(デフォルト 'C-m')
+set -g @session-manager-key 'SPACE'
 
 # テーマ変更
 set -g @session-manager-theme 'catppuccin'
@@ -125,23 +125,10 @@ set -g @session-manager-debug '1'
 - 🔥: 5分以内に活動
 - ⚡: 1時間以内に活動
 
-## 開発状況
 
-### 実装済み機能
+# トラブルシューティング
 
-- ✅ Phase 1: 基盤構築（utils.sh, config.sh, プラグインエントリー）
-- ✅ Phase 2: コア機能（セッション一覧、プレビュー、基本切り替え）
-- ✅ Phase 3: 詳細機能（ウィンドウ・ペーンレベルの操作）
-- ✅ Phase 4: CRUD操作（セッション作成・削除・リネーム）
-- ✅ Phase 5: テーマシステム（Tokyo Night, Catppuccin, Default）
-
-### 実装予定機能
-
-- ⏳ Phase 6: テストと最適化（単体テスト、統合テスト、パフォーマンス測定）
-
-## トラブルシューティング
-
-### ポップアップが表示されない
+## ポップアップが表示されない
 
 tmuxのバージョンを確認してください：
 
@@ -149,7 +136,7 @@ tmuxのバージョンを確認してください：
 tmux -V  # 3.2以上が必要
 ```
 
-### fzfが見つからない
+## fzfが見つからない
 
 fzfをインストールしてください：
 
@@ -161,15 +148,6 @@ brew install fzf
 sudo apt install fzf
 ```
 
-## ライセンス
+# ライセンス
 
 MIT License
-
-## 関連リンク
-
-- [tmux公式](https://github.com/tmux/tmux)
-- [fzf](https://github.com/junegunn/fzf)
-
-## 作者
-
-tmux-session-manager開発チーム

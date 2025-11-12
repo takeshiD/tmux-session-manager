@@ -25,7 +25,7 @@ tmux Session Manager is a popup-based UI that lets you browse and manage tmux se
 Add the plugin to `.tmux.conf`:
 
 ```tmux
-set -g @plugin 'your-name/tmux-session-manager'
+set -g @plugin 'takeshiD/tmux-session-manager'
 ```
 
 Press `prefix + I` inside tmux to install.
@@ -53,7 +53,7 @@ tmux source-file ~/.tmux.conf
 
 ### Basic key bindings
 
-`Ctrl-s` launches the session switcher by default.
+`Ctrl-m` launches the session switcher by default.
 
 **Session list mode**
 - `Enter`: Switch to the selected session
@@ -82,8 +82,8 @@ tmux source-file ~/.tmux.conf
 All options are set in `.tmux.conf`:
 
 ```tmux
-# Change the key binding
-set -g @session-manager-key 'C-j'
+# Change the key binding(default 'C-m')
+set -g @session-manager-key 'SPACE'
 
 # Switch theme (tokyonight | catppuccin | default)
 set -g @session-manager-theme 'catppuccin'
@@ -125,20 +125,6 @@ set -g @session-manager-debug '1'
 - 🔥 Active within the last 5 minutes
 - ⚡ Active within the last hour
 
-## Project status
-
-### Implemented
-
-- ✅ Phase 1: Foundations (utils.sh, config.sh, plugin entry point)
-- ✅ Phase 2: Core features (session list, preview, switching)
-- ✅ Phase 3: Advanced operations (window/pane actions)
-- ✅ Phase 4: CRUD operations (create, delete, rename sessions)
-- ✅ Phase 5: Theme system (Tokyo Night, Catppuccin, Default)
-
-### Planned
-
-- ⏳ Phase 6: Testing & optimization (unit tests, integration tests, performance)
-
 ## Troubleshooting
 
 ### Popup does not appear
@@ -164,12 +150,3 @@ sudo apt install fzf
 ## License
 
 MIT License
-
-## Related links
-
-- [tmux](https://github.com/tmux/tmux)
-- [fzf](https://github.com/junegunn/fzf)
-
-## Authors
-
-tmux-session-manager maintainers
