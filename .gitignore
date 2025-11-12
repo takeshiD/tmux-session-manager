@@ -16,3 +16,5 @@ tests/tmp/
 # OS
 .DS_Store
 Thumbs.db
+.serena
+.claude
