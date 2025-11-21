@@ -32,10 +32,12 @@ build_fzf_options() {
     base_options=$(get_base_fzf_options)
     preview_window=$(get_preview_window_options)
 
-    local header="┃ Window: ${session_name}:${window_index} │ ⏎ Switch │ ESC Back │ Ctrl-/ Preview ┃"
+    local header="Pane ${session_name}:${window_index} | ⏎ switch | ESC back | C-/ preview"
     local prompt="🖼️  Panes > "
 
     echo "$base_options \
+        --delimiter='\t' \
+        --with-nth=2 \
         --header='$header' \
         --prompt='$prompt' \
         --preview='bash ${CURRENT_DIR}/preview-pane.sh ${session_name} ${window_index} {1}' \

@@ -94,9 +94,9 @@ format_pane_line() {
     display_cmd=$(truncate_string "$cmd" 15)
     display_cmd=$(printf "%-15s" "$display_cmd")
 
-    # フォーマット出力
-    printf "%b%s %d: %s %s \033[2m(%dx%d)\033[0m\n" \
-        "$color" "$marker" "$index" "$icon" "$display_cmd" "$width" "$height"
+    # 出力形式: "<index>\t<表示文字列>"
+    printf "%s\t%b%s %s %s \033[2m(%dx%d)\033[0m\n" \
+        "$index" "$color" "$marker" "$icon" "$display_cmd" "$width" "$height"
 }
 
 # ====================================================================

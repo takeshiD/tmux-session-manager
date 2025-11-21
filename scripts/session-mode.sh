@@ -17,7 +17,8 @@ source "${CURRENT_DIR}/utils.sh"
 # 定数
 # ====================================================================
 
-readonly HEADER="┃ ⏎ Switch │ ␣ Details │ Ctrl-n New │ Ctrl-r Rename │ Ctrl-x Delete │ Ctrl-/ Preview │ q Quit ┃"
+# ヘッダーは端末幅に収まるよう短く記載（約80文字）
+readonly HEADER="⏎ switch | ␣ detail | C-n new | C-r rename | C-x kill | C-/ preview | q quit"
 readonly PROMPT="🔍 Sessions > "
 
 # ====================================================================
@@ -42,7 +43,7 @@ build_fzf_options() {
         --preview='bash ${CURRENT_DIR}/preview-session.sh {1}' \
         --preview-window='$preview_window' \
         --bind='enter:become(echo switch {1})' \
-        --bind='space:execute(bash ${CURRENT_DIR}/detail-mode.sh {1})+abort' \
+        --bind='space:execute(bash ${CURRENT_DIR}/detail-mode.sh {1})' \
         --bind='ctrl-n:execute(bash ${CURRENT_DIR}/actions.sh new)+reload(bash ${CURRENT_DIR}/session-list.sh)' \
         --bind='ctrl-r:execute(bash ${CURRENT_DIR}/actions.sh rename {1})+reload(bash ${CURRENT_DIR}/session-list.sh)' \
         --bind='ctrl-x:execute(bash ${CURRENT_DIR}/actions.sh kill {1})+reload(bash ${CURRENT_DIR}/session-list.sh)' \

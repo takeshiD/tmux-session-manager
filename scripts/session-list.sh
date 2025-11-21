@@ -54,12 +54,15 @@ get_current_session() {
 # 出力: ソートされたセッション情報
 sort_sessions() {
     local current="$1"
+    # パイプ入力を複数回使えるよう一旦全体を保持
+    local sessions
+    sessions=$(cat)
 
     # 現在のセッションを先頭に、その後アタッチ済み、最後にデタッチ
     {
-        grep "^${current}|" || true
-        grep -v "^${current}|" | grep "|[1-9][0-9]*|" || true
-        grep -v "^${current}|" | grep "|0|" || true
+        echo "$sessions" | awk -F '|' -v cur="$current" '($1==cur)'
+        echo "$sessions" | awk -F '|' -v cur="$current" '($1!=cur && $3>0)'
+        echo "$sessions" | awk -F '|' -v cur="$current" '($1!=cur && $3==0)'
     }
 }
 
@@ -94,10 +97,9 @@ format_session_line() {
     local time_ago
     time_ago=$(format_time_ago "$activity")
 
-    # セッション名を切り詰め
+    # セッション名は切り詰めずにそのまま表示（長い名前でも切替に必要な完全な値を保持）
     local display_name
-    display_name=$(truncate_string "$name" 20)
-    display_name=$(printf "%-20s" "$display_name")
+    display_name=$(printf "%-20s" "$name")
 
     # 色コード設定
     local color_code=""

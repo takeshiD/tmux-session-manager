@@ -8,13 +8,13 @@
 # ====================================================================
 
 # ポップアップサイズ
-readonly DEFAULT_POPUP_WIDTH="95%"
-readonly DEFAULT_POPUP_HEIGHT="90%"
-readonly DEFAULT_PREVIEW_WIDTH="65"
+readonly DEFAULT_POPUP_WIDTH="70%"
+readonly DEFAULT_POPUP_HEIGHT="70%"
+readonly DEFAULT_PREVIEW_WIDTH="55"
 
 # ポップアップ/枠線
 readonly DEFAULT_POPUP_BORDER="on"
-readonly DEFAULT_FZF_BORDER="rounded"
+readonly DEFAULT_FZF_BORDER="none"
 
 # カラーテーマ
 readonly DEFAULT_THEME="tokyonight"

@@ -86,9 +86,9 @@ format_window_line() {
     display_name=$(truncate_string "$name" 25)
     display_name=$(printf "%-25s" "$display_name")
 
-    # フォーマット出力
-    printf "%b%s %2d: %s %s \033[2m[%dP]\033[0m\n" \
-        "$color" "$marker" "$index" "$display_name" "$layout_icon" "$panes"
+    # 出力形式: "<index>\t<表示用文字列>" として、fzfでindexを第1フィールドに利用する
+    printf "%s\t%b%s %s %s \033[2m[%dP]\033[0m\n" \
+        "$index" "$color" "$marker" "$display_name" "$layout_icon" "$panes"
 }
 
 # ====================================================================

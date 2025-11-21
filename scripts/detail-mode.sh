@@ -30,10 +30,13 @@ build_fzf_options() {
     base_options=$(get_base_fzf_options)
     preview_window=$(get_preview_window_options)
 
-    local header="┃ Session: ${session_name} │ ⏎ Switch │ ␣ Pane Details │ ESC Back │ Ctrl-/ Preview ┃"
+    # ヘッダーをコンパクトに（約80文字以内）
+    local header="Session:${session_name} | ⏎ switch | ␣ panes | ESC back | C-/ preview"
     local prompt="🪟 Windows > "
 
     echo "$base_options \
+        --delimiter='\t' \
+        --with-nth=2 \
         --header='$header' \
         --prompt='$prompt' \
         --preview='bash ${CURRENT_DIR}/preview-window.sh ${session_name} {1}' \
@@ -97,6 +100,8 @@ process_result() {
         session_name=$(echo "$result" | awk '{print $2}')
         window_index=$(echo "$result" | awk '{print $3}')
         switch_to_window "$session_name" "$window_index"
+    else
+        log_debug "Unknown result: $result"
     fi
 }
 
