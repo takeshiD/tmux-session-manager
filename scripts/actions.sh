@@ -27,16 +27,19 @@ action_new() {
     log_info "Creating new session"
 
     # fzfを使って名前入力（stdinはダミー行、端末は/dev/tty）
-    local new_name fzf_status
+    local fzf_out fzf_status new_name
     set +o pipefail
-    new_name=$(printf "\n" | fzf \
+    fzf_out=$(printf "\n" | fzf \
         --print-query \
         --prompt="New session name: " \
         --header="Enter name for new session" \
         --height=5 \
         --border=rounded </dev/tty)
-    fzf_status=$?
+    fzf_status=${PIPESTATUS[0]}
     set -o pipefail
+
+    # fzf出力の最後の行を名前として採用
+    new_name=$(echo "$fzf_out" | tail -1)
 
     # fzf起動に失敗した場合
     if [[ $fzf_status -ne 0 ]]; then
@@ -88,16 +91,18 @@ action_rename() {
     log_info "Renaming session: $session_name"
 
     # 新しい名前入力（初期値は現在の名前）
-    local new_name fzf_status
+    local fzf_out fzf_status new_name
     set +o pipefail
-    new_name=$(echo "$session_name" | fzf \
+    fzf_out=$(echo "$session_name" | fzf \
         --print-query \
         --prompt="Rename session: " \
         --header="Enter new name for '$session_name'" \
         --height=5 \
         --border=rounded </dev/tty)
-    fzf_status=$?
+    fzf_status=${PIPESTATUS[0]}
     set -o pipefail
+
+    new_name=$(echo "$fzf_out" | tail -1)
 
     if [[ $fzf_status -ne 0 ]]; then
         log_error "fzf aborted for rename"
