@@ -26,17 +26,20 @@ source "${CURRENT_DIR}/utils.sh"
 action_new() {
     log_info "Creating new session"
 
-    # fzfを使って名前入力（stdinは/dev/ttyから取る）
-    local new_name
-    new_name=$(fzf \
+    # fzfを使って名前入力（stdinはダミー行、端末は/dev/tty）
+    local new_name fzf_status
+    set +o pipefail
+    new_name=$(printf "\n" | fzf \
         --print-query \
         --prompt="New session name: " \
         --header="Enter name for new session" \
         --height=5 \
-        --border=rounded </dev/tty | tail -1)
+        --border=rounded </dev/tty)
+    fzf_status=$?
+    set -o pipefail
 
     # fzf起動に失敗した場合
-    if [[ $? -ne 0 ]]; then
+    if [[ $fzf_status -ne 0 ]]; then
         log_error "fzf aborted for new session name"
         return 1
     fi
@@ -85,13 +88,21 @@ action_rename() {
     log_info "Renaming session: $session_name"
 
     # 新しい名前入力（初期値は現在の名前）
-    local new_name
+    local new_name fzf_status
+    set +o pipefail
     new_name=$(echo "$session_name" | fzf \
         --print-query \
         --prompt="Rename session: " \
         --header="Enter new name for '$session_name'" \
         --height=5 \
-        --border=rounded | tail -1)
+        --border=rounded </dev/tty)
+    fzf_status=$?
+    set -o pipefail
+
+    if [[ $fzf_status -ne 0 ]]; then
+        log_error "fzf aborted for rename"
+        return 1
+    fi
 
     # キャンセルチェック
     if [[ -z "$new_name" ]]; then
