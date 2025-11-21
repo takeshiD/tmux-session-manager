@@ -40,7 +40,7 @@ action_new() {
 
     # fzf出力の最後の行を名前として採用
     new_name=$(echo "$fzf_out" | tail -1)
-
+    log_info "New session name: $new_name"
     # fzf起動に失敗した場合
     if [[ $fzf_status -ne 0 ]]; then
         log_error "fzf aborted for new session name"
