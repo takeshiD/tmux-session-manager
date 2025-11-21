@@ -26,16 +26,14 @@ source "${CURRENT_DIR}/utils.sh"
 action_new() {
     log_info "Creating new session"
 
-    # 名前入力プロンプト（fzf使用）
+    # 標準入力が塞がれていても対話できるよう /dev/tty から読む
     local new_name
-    new_name=$(echo "" | fzf \
-        --print-query \
-        --prompt="New session name: " \
-        --header="Enter name for new session" \
-        --height=5 \
-        --border=rounded | tail -1)
+    if ! read -r -p "New session name: " new_name </dev/tty; then
+        log_warn "Failed to read new session name"
+        return 1
+    fi
 
-    # キャンセルチェック
+    # キャンセルチェック（空入力）
     if [[ -z "$new_name" ]]; then
         log_info "New session creation cancelled"
         return 0
