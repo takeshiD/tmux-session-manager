@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+NOW=$(date +%s)
+CURRENT_SESSION="alpha"
+
+SESSIONS=(
+    "alpha|3|1|$((NOW-7200))|$((NOW-90))"
+    "beta|2|0|$((NOW-5400))|$((NOW-600))"
+    "gamma|1|0|$((NOW-3600))|$((NOW-1800))"
+)
+
+declare -A WINDOWS
+WINDOWS["alpha"]=$'0|editor|2|1\n1|tests|1|0\n2|logs|1|0'
+WINDOWS["beta"]=$'0|api|1|1\n1|deploy|1|0'
+WINDOWS["gamma"]=$'0|ops|1|1'
+
+declare -A PANES
+PANES["alpha:0"]=$'0|nvim|120|32|1\n1|bash|120|32|0'
+PANES["alpha:1"]=$'0|pytest|120|64|1'
+PANES["alpha:2"]=$'0|tail|120|40|1'
+PANES["beta:0"]=$'0|node|120|64|1\n1|bash|120|32|0'
+PANES["beta:1"]=$'0|ssh|120|32|1'
+PANES["gamma:0"]=$'0|htop|120|64|1'
+
+declare -A CAPTURE
+CAPTURE["alpha:0.0"]=$'~/projects/app (main)\n$ nvim app.sh\n...editing code...'
+CAPTURE["alpha:0.1"]=$'bash session\n$ ls\nREADME.md'
+CAPTURE["alpha:1.0"]=$'pytest summary\n3 passed, 0 failed'
+CAPTURE["alpha:2.0"]=$'tail -f logs\nListening on :4000'
+CAPTURE["beta:0.0"]=$'npm run dev\nready in 2s'
+CAPTURE["gamma:0.0"]=$'htop demo rows'
+
+cmd=${1:-}
+if [[ -n "$cmd" ]]; then
+    shift || true
+fi
+
+print_sessions() {
+    printf "%s\n" "${SESSIONS[@]}"
+}
+
+print_windows() {
+    local session=$1
+    printf "%s\n" "${WINDOWS[$session]:-}"
+}
+
+print_panes() {
+    local key=$1
+    printf "%s\n" "${PANES[$key]:-}"
+}
+
+print_capture() {
+    local target=$1
+    printf "%s\n" "${CAPTURE[$target]:-}" | sed 's/\\t/    /g'
+}
+
+case "$cmd" in
+    list-sessions)
+        while (($#)); do
+            case "$1" in
+                -F)
+                    shift 2
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
+        print_sessions
+        ;;
+    list-windows)
+        local session=""
+        while (($#)); do
+            case "$1" in
+                -t)
+                    session=$2
+                    shift 2
+                    ;;
+                -F)
+                    shift 2
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
+        print_windows "$session"
+        ;;
+    list-panes)
+        local target=""
+        while (($#)); do
+            case "$1" in
+                -t)
+                    target=$2
+                    shift 2
+                    ;;
+                -F)
+                    shift 2
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
+        print_panes "$target"
+        ;;
+    capture-pane)
+        local target=""
+        while (($#)); do
+            case "$1" in
+                -t)
+                    target=$2
+                    shift 2
+                    ;;
+                -p)
+                    shift
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
+        print_capture "$target"
+        ;;
+    display-message)
+        if [[ "${1:-}" == "-p" ]]; then
+            shift
+            case "${1:-}" in
+                '#S')
+                    echo "$CURRENT_SESSION"
+                    ;;
+                *)
+                    echo ""
+                    ;;
+            esac
+        fi
+        ;;
+    show-option)
+        # Always return empty (use defaults)
+        ;;
+    has-session)
+        local target=""
+        while (($#)); do
+            case "$1" in
+                -t)
+                    target=${2//:/}
+                    shift 2
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
+        for entry in "${SESSIONS[@]}"; do
+            if [[ $entry == "$target"* ]]; then
+                exit 0
+            fi
+        done
+        exit 1
+        ;;
+    switch-client|select-window|select-pane|display-popup|new-window|rename-session|new-session)
+        # no-op for demo
+        ;;
+    *)
+        # default success
+        ;;
+esac

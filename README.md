@@ -4,13 +4,15 @@
 
 tmux Session Manager is a popup-based UI that lets you browse and manage tmux sessions, windows, and panes with a workflow similar to lazygit. It offers visual navigation, live previews, and fast switching powered by fzf.
 
+![tmux Session Manager demo](assets/session-manager.gif)
+
 ## Features
 
 - 📝 **Visual session list**: Icons and colors make states immediately recognizable.
 - 🔍 **Live preview**: Inspect session content without leaving the popup.
 - ⚡ **Fast switching**: Smooth interaction thanks to fzf.
 - 🎨 **Themeable**: Ships with Tokyo Night, Catppuccin, and the default tmux palette.
-- 📊 **Hierarchical navigation**: Move across the session → window → pane stack (pane view under active development).
+- 📊 **Hierarchical navigation**: Drill into sessions → windows → panes with consistent key bindings.
 
 ## Requirements
 
@@ -33,7 +35,7 @@ Press `prefix + I` inside tmux to install.
 ### Manual installation
 
 ```bash
-git clone https://github.com/your-name/tmux-session-manager.git \
+git clone https://github.com/takeshiD/tmux-session-manager.git \
     ~/.tmux/plugins/tmux-session-manager
 ```
 
@@ -53,7 +55,8 @@ tmux source-file ~/.tmux.conf
 
 ### Basic key bindings
 
-`Ctrl-m` launches the session switcher by default.
+`prefix + Space` launches the session switcher by default.  
+Override the key with `set -g @session-manager-key 'C-s'` (triggered as `prefix + C-s`).
 
 **Session list mode**
 - `Enter`: Switch to the selected session
@@ -82,7 +85,7 @@ tmux source-file ~/.tmux.conf
 All options are set in `.tmux.conf`:
 
 ```tmux
-# Change the key binding(default 'C-m')
+# Change the key binding(default 'SPACE')
 set -g @session-manager-key 'SPACE'
 
 # Switch theme (tokyonight | catppuccin | default)

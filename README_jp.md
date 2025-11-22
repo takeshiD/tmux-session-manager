@@ -4,13 +4,15 @@
 
 tmuxのセッション管理を視覚的かつ効率的に行うためのプラグイン。lazygitのようなポップアップUIを提供し、セッション・ウィンドウ・ペーンの階層的なナビゲーションとリアルタイムプレビューを実現します。
 
+![tmux Session Manager デモ](assets/session-manager.gif)
+
 ## 特徴
 
 - 📝 **視覚的なセッション一覧**: アイコンと色分けで状態を直感的に表示
 - 🔍 **リアルタイムプレビュー**: セッション内容をその場で確認
 - ⚡ **高速切り替え**: fzfベースの快適な操作性
 - 🎨 **カスタマイズ可能**: Tokyo Night、Catppuccinなど複数のテーマ対応
-- 📊 **階層的ナビゲーション**: セッション→ウィンドウ→ペーンの3階層移動（実装予定）
+- 📊 **階層的ナビゲーション**: セッション→ウィンドウ→ペーンの3階層を同じ操作感で移動
 
 ## 必要要件
 
@@ -33,7 +35,7 @@ tmux内で`prefix + I`を実行してインストール。
 ### 手動インストール
 
 ```bash
-git clone https://github.com/your-name/tmux-session-manager.git \
+git clone https://github.com/takeshiD/tmux-session-manager.git \
     ~/.tmux/plugins/tmux-session-manager
 ```
 
@@ -53,7 +55,8 @@ tmux source-file ~/.tmux.conf
 
 ### 基本操作
 
-デフォルトでは`Ctrl-s`でセッションスイッチャーを起動します。
+デフォルトでは`prefix + Space`でセッションスイッチャーを起動します。  
+`set -g @session-manager-key 'C-s'` のように設定すれば `prefix + C-s` へ変更できます。
 
 **セッション一覧モード:**
 - `Enter`: セッション切り替え
@@ -82,7 +85,7 @@ tmux source-file ~/.tmux.conf
 `.tmux.conf`で以下の設定が可能です：
 
 ```tmux
-# キーバインド変更(デフォルト 'C-m')
+# キーバインド変更(デフォルト 'SPACE')
 set -g @session-manager-key 'SPACE'
 
 # テーマ変更
