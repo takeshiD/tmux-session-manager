@@ -152,9 +152,9 @@ validate_session_name() {
         return 1
     fi
 
-    # 特殊文字チェック（.と:は使用不可）
-    if [[ "$name" =~ [.:] ]]; then
-        log_error "Session name cannot contain '.' or ':'"
+    # 特殊文字チェック（tmux仕様で:は使用不可）
+    if [[ "$name" == *:* ]]; then
+        log_error "Session name cannot contain ':'"
         return 1
     fi
 
