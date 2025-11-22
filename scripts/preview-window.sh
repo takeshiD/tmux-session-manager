@@ -41,8 +41,10 @@ print_header() {
     local title_display
     title_display=$(truncate_string "$title" $((BOX_WIDTH - 10)))
 
+    local inner_width=$((BOX_WIDTH))
     echo -e "\033[1;35m╔$(printf '═%.0s' $(seq 1 $BOX_WIDTH))╗\033[0m"
-    echo -e "\033[1;35m║\033[0m \033[1;36m🪟 Window: ${title_display}\033[0m"
+    printf "\033[1;35m║\033[0m \033[1;36m%-*s\033[0m\033[1;35m║\033[0m\n" \
+        "$inner_width" "  Window: ${title_display}"
     echo -e "\033[1;35m╚$(printf '═%.0s' $(seq 1 $BOX_WIDTH))╝\033[0m"
     echo
 }

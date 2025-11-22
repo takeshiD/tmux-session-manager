@@ -39,8 +39,10 @@ print_header() {
 
     local title="${session_name}:${window_index}.${pane_index}"
 
+    local inner_width=$((BOX_WIDTH - 1))
     echo -e "\033[1;35m╔$(printf '═%.0s' $(seq 1 $BOX_WIDTH))╗\033[0m"
-    echo -e "\033[1;35m║\033[0m \033[1;36m🖼️  Pane: ${title}\033[0m"
+    printf "\033[1;35m║\033[0m \033[1;36m%-*s\033[0m\033[1;35m║\033[0m\n" \
+        "$inner_width" "  Pane: ${title}"
     echo -e "\033[1;35m╚$(printf '═%.0s' $(seq 1 $BOX_WIDTH))╝\033[0m"
     echo
 }

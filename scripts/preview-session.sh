@@ -35,8 +35,10 @@ print_header() {
     local name_display
     name_display=$(truncate_string "$session_name" $((BOX_WIDTH - 15)))
 
+    local inner_width=$((BOX_WIDTH - 1))
     echo -e "\033[1;35m╔$(printf '═%.0s' $(seq 1 $BOX_WIDTH))╗\033[0m"
-    echo -e "\033[1;35m║\033[0m \033[1;36m📦 Session: ${name_display}\033[0m"
+    printf "\033[1;35m║\033[0m \033[1;36m%-*s\033[0m\033[1;35m║\033[0m\n" \
+        "$inner_width" "  Session: ${name_display}"
     echo -e "\033[1;35m╚$(printf '═%.0s' $(seq 1 $BOX_WIDTH))╝\033[0m"
     echo
 }
