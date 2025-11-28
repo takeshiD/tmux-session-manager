@@ -20,6 +20,20 @@ source "${CURRENT_DIR}/utils.sh"
 readonly BOX_WIDTH=60
 readonly PREVIEW_LINES=50
 
+# Decide how many lines of pane content to show; keep the bottom part.
+get_capture_lines() {
+    local preview_env="${FZF_PREVIEW_LINES:-0}"
+    local fallback="$PREVIEW_LINES"
+    # header 4 + info block 6 + content title 1 = 11
+    local margin=11
+
+    if [[ "$preview_env" =~ ^[0-9]+$ ]] && (( preview_env > margin + 3 )); then
+        echo $((preview_env - margin))
+    else
+        echo "$fallback"
+    fi
+}
+
 # ====================================================================
 # Function definitions
 # ====================================================================
@@ -113,8 +127,11 @@ print_pane_content() {
     local window_index="$2"
     local pane_index="$3"
 
-    echo -e "\033[1;34m Content (last ${PREVIEW_LINES} lines)\033[0m"
-    if ! tmux capture-pane -t "${session_name}:${window_index}.${pane_index}" -J -N -e -p -S - 2>/dev/null; then
+    local capture_lines
+    capture_lines=$(get_capture_lines)
+
+    echo -e "\033[1;34m Content (last ${capture_lines} lines)\033[0m"
+    if ! tmux capture-pane -t "${session_name}:${window_index}.${pane_index}" -J -N -e -p -S - 2>/dev/null | tail -n "$capture_lines"; then
         echo -e "\033[1;34m│\033[0m \033[2m(Content not available)\033[0m"
     fi
 }

@@ -21,6 +21,34 @@ readonly BOX_WIDTH=60
 readonly PREVIEW_LINES=15
 PREVIEW_REFRESH_MS="${PREVIEW_REFRESH_MS:-0}"
 
+# Decide how many lines of pane content to show; keep the bottom part.
+# Accounts for header, session info, window list height.
+get_capture_lines() {
+    local session_name="$1"
+    local fallback="$PREVIEW_LINES"
+    local preview_env="${FZF_PREVIEW_LINES:-0}"
+
+    # Lines consumed by static sections:
+    # header (4) + session info box (6) + active preview title (1)
+    local static_lines=11
+
+    # window list height: header line + one per window + trailing blank
+    local window_count
+    window_count=$(tmux list-windows -t "$session_name" 2>/dev/null | wc -l | tr -d ' ')
+    if ! [[ "$window_count" =~ ^[0-9]+$ ]]; then
+        window_count=0
+    fi
+    local dynamic_lines=$((1 + window_count + 1))
+
+    local margin=$((static_lines + dynamic_lines))
+
+    if [[ "$preview_env" =~ ^[0-9]+$ ]] && (( preview_env > margin + 3 )); then
+        echo $((preview_env - margin))
+    else
+        echo "$fallback"
+    fi
+}
+
 # ====================================================================
 # Function definitions
 # ====================================================================
@@ -180,7 +208,10 @@ print_active_pane_preview() {
 
     echo -e "\033[1;34m Active Window Preview: \033[1;36m${window_name}\033[0m"
 
-    if ! tmux capture-pane -t "${session_name}:${active_window}.0" -J -N -e -p 2>/dev/null; then
+    local capture_lines
+    capture_lines=$(get_capture_lines "$session_name")
+
+    if ! tmux capture-pane -t "${session_name}:${active_window}.0" -J -N -e -p 2>/dev/null | tail -n "$capture_lines"; then
         echo -e "\033[1;34m│\033[0m   \033[2m(Preview not available)\033[0m"
     fi
 }

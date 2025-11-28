@@ -20,6 +20,33 @@ source "${CURRENT_DIR}/utils.sh"
 readonly BOX_WIDTH=60
 readonly PANE_PREVIEW_LINES=8
 
+# Decide per-pane content lines based on available preview height; keep bottom part.
+get_per_pane_lines() {
+    local panes="$1"
+    local preview_env="${FZF_PREVIEW_LINES:-0}"
+    local fallback="$PANE_PREVIEW_LINES"
+
+    # header 4 lines + pane list block (1 header + panes rows + 1 blank)
+    local header_lines=4
+    local list_lines=$((1 + panes + 1))
+    local static=$((header_lines + list_lines))
+
+    if [[ "$preview_env" =~ ^[0-9]+$ ]]; then
+        local available=$((preview_env - static))
+        # per pane overhead: title line + blank line ≈2
+        if (( available > (2 * panes + 1) )); then
+            local per=$((available / panes - 2))
+            if (( per < 3 )); then
+                per=3
+            fi
+            echo "$per"
+            return
+        fi
+    fi
+
+    echo "$fallback"
+}
+
 # ====================================================================
 # Function definitions
 # ====================================================================
@@ -133,6 +160,9 @@ print_panes_preview() {
     local window_index="$2"
     local panes="$3"
 
+    local per_pane_lines
+    per_pane_lines=$(get_per_pane_lines "$panes")
+
     for i in $(seq 0 $((panes - 1))); do
         local cmd
         cmd=$(tmux display-message -t "${session_name}:${window_index}.${i}" -p "#{pane_current_command}" 2>/dev/null)
@@ -140,7 +170,7 @@ print_panes_preview() {
         echo -e "\033[1;34m├─ Pane $i ($cmd):\033[0m"
 
         if ! tmux capture-pane -t "${session_name}:${window_index}.${i}" -e -p 2>/dev/null | \
-            head -${PANE_PREVIEW_LINES} | \
+            tail -n "$per_pane_lines" | \
             while IFS= read -r line; do
                 echo -e "\033[1;34m│\033[0m   $line"
             done; then
