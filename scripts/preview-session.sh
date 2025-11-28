@@ -182,10 +182,9 @@ print_active_pane_preview() {
     echo -e "\033[1;34m┌─ Active Window Preview: \033[1;36m${window_name}\033[0m"
 
     # ペーン内容キャプチャ
-    if ! tmux capture-pane -t "${session_name}:${active_window}.0" -p 2>/dev/null | head -${PREVIEW_LINES} | \
-        while IFS= read -r line; do
-            echo -e "\033[1;34m│\033[0m   $line"
-        done; then
+    if ! tmux capture-pane -t "${session_name}:${active_window}.0" -J -N -e -p 2>/dev/null | head -${PREVIEW_LINES}; then
+        # while IFS= read -r line; do
+        # done; then
         echo -e "\033[1;34m│\033[0m   \033[2m(Preview not available)\033[0m"
     fi
 

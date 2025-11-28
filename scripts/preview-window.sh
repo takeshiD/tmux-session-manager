@@ -140,7 +140,7 @@ print_panes_preview() {
 
         echo -e "\033[1;34m├─ Pane $i ($cmd):\033[0m"
 
-        if ! tmux capture-pane -t "${session_name}:${window_index}.${i}" -p 2>/dev/null | \
+        if ! tmux capture-pane -t "${session_name}:${window_index}.${i}" -e -p 2>/dev/null | \
             head -${PANE_PREVIEW_LINES} | \
             while IFS= read -r line; do
                 echo -e "\033[1;34m│\033[0m   $line"

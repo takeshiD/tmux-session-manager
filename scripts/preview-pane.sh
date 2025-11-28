@@ -115,7 +115,7 @@ print_pane_content() {
 
     echo -e "\033[1;34m┌─ Content (last ${PREVIEW_LINES} lines)\033[0m"
 
-    if ! tmux capture-pane -t "${session_name}:${window_index}.${pane_index}" -p -S - 2>/dev/null | \
+    if ! tmux capture-pane -t "${session_name}:${window_index}.${pane_index}" -e -p -S - 2>/dev/null | \
         tail -${PREVIEW_LINES} | \
         while IFS= read -r line; do
             echo -e "\033[1;34m│\033[0m $line"
