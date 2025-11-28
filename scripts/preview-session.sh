@@ -19,6 +19,7 @@ source "${CURRENT_DIR}/utils.sh"
 
 readonly BOX_WIDTH=60
 readonly PREVIEW_LINES=15
+PREVIEW_REFRESH_MS="${PREVIEW_REFRESH_MS:-0}"
 
 # ====================================================================
 # 関数定義
@@ -173,36 +174,24 @@ print_active_pane_preview() {
         return 0
     fi
 
-    # ウィンドウ名取得
     local window_name
     window_name=$(tmux list-windows -t "$session_name" \
         -F "#{window_index}|#{window_name}" 2>/dev/null | \
         grep "^${active_window}|" | cut -d'|' -f2)
 
-    echo -e "\033[1;34m┌─ Active Window Preview: \033[1;36m${window_name}\033[0m"
+    echo -e "\033[1;34m Active Window Preview: \033[1;36m${window_name}\033[0m"
 
-    # ペーン内容キャプチャ
-    if ! tmux capture-pane -t "${session_name}:${active_window}.0" -J -N -e -p 2>/dev/null | head -${PREVIEW_LINES}; then
-        # while IFS= read -r line; do
-        # done; then
+    if ! tmux capture-pane -t "${session_name}:${active_window}.0" -J -N -e -p 2>/dev/null; then
         echo -e "\033[1;34m│\033[0m   \033[2m(Preview not available)\033[0m"
     fi
-
-    echo -e "\033[1;34m└─\033[0m \033[2m(Showing first ${PREVIEW_LINES} lines of pane 0)\033[0m"
 }
 
-# ====================================================================
-# メイン処理
-# ====================================================================
-
-# 関数名: main
-# 説明: セッションプレビューを生成
+# 関数名: render_preview
+# 説明: 単一回のプレビュー描画
 # 引数:
 #   $1 - セッション名
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
-main() {
+# 戻り値: 0 成功 / 1 失敗
+render_preview() {
     local session_name="$1"
 
     log_debug "Generating preview for session: $session_name"
@@ -225,6 +214,45 @@ main() {
 
     log_debug "Preview generated successfully"
     return 0
+}
+
+# ====================================================================
+# メイン処理
+# ====================================================================
+
+# 関数名: main
+# 説明: セッションプレビューを生成
+# 引数:
+#   $1 - セッション名
+# 戻り値:
+#   0 - 成功
+#   1 - エラー
+main() {
+    local session_name="$1"
+    local refresh_ms="$PREVIEW_REFRESH_MS"
+
+    # 数値バリデーション（非数値は0扱い）
+    if ! [[ "$refresh_ms" =~ ^[0-9]+$ ]]; then
+        refresh_ms=0
+    fi
+
+    # ループ更新が有効な場合は連続描画
+    if (( refresh_ms > 0 )); then
+        local interval_sec
+        interval_sec=$(awk -v ms="$refresh_ms" 'BEGIN {printf "%.3f", ms/1000}')
+        trap 'exit 0' INT TERM
+        while true; do
+            # 画面クリアして最新内容に置き換え
+            printf '\033[H\033[2J'
+            if ! render_preview "$session_name"; then
+                sleep "$interval_sec"
+                continue
+            fi
+            sleep "$interval_sec"
+        done
+    else
+        render_preview "$session_name"
+    fi
 }
 
 # 引数チェック

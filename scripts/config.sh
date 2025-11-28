@@ -11,6 +11,7 @@
 readonly DEFAULT_POPUP_WIDTH="70%"
 readonly DEFAULT_POPUP_HEIGHT="70%"
 readonly DEFAULT_PREVIEW_WIDTH="75"
+readonly DEFAULT_PREVIEW_REFRESH_MS="1000"
 
 # ポップアップ/枠線
 readonly DEFAULT_POPUP_BORDER="on"
@@ -54,6 +55,7 @@ get_tmux_option() {
 export POPUP_WIDTH=$(get_tmux_option "session-manager-popup-width" "$DEFAULT_POPUP_WIDTH")
 export POPUP_HEIGHT=$(get_tmux_option "session-manager-popup-height" "$DEFAULT_POPUP_HEIGHT")
 export PREVIEW_WIDTH=$(get_tmux_option "session-manager-preview-width" "$DEFAULT_PREVIEW_WIDTH")
+export PREVIEW_REFRESH_MS=$(get_tmux_option "session-manager-preview-refresh-ms" "$DEFAULT_PREVIEW_REFRESH_MS")
 export POPUP_BORDER=$(get_tmux_option "session-manager-popup-border" "$DEFAULT_POPUP_BORDER")
 export FZF_BORDER_STYLE=$(get_tmux_option "session-manager-fzf-border" "$DEFAULT_FZF_BORDER")
 
@@ -128,5 +130,5 @@ get_base_fzf_options() {
 # 戻り値: 0
 # 出力: プレビューウィンドウオプション文字列
 get_preview_window_options() {
-    echo "right:${PREVIEW_WIDTH}%:wrap:border-left"
+    echo "right:${PREVIEW_WIDTH}%:border-left"
 }

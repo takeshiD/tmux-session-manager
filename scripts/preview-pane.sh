@@ -113,17 +113,10 @@ print_pane_content() {
     local window_index="$2"
     local pane_index="$3"
 
-    echo -e "\033[1;34m┌─ Content (last ${PREVIEW_LINES} lines)\033[0m"
-
-    if ! tmux capture-pane -t "${session_name}:${window_index}.${pane_index}" -e -p -S - 2>/dev/null | \
-        tail -${PREVIEW_LINES} | \
-        while IFS= read -r line; do
-            echo -e "\033[1;34m│\033[0m $line"
-        done; then
+    echo -e "\033[1;34m Content (last ${PREVIEW_LINES} lines)\033[0m"
+    if ! tmux capture-pane -t "${session_name}:${window_index}.${pane_index}" -J -N -e -p -S - 2>/dev/null; then
         echo -e "\033[1;34m│\033[0m \033[2m(Content not available)\033[0m"
     fi
-
-    echo -e "\033[1;34m└─\033[0m"
 }
 
 # ====================================================================
