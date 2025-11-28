@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# ファイル名: utils.sh
-# 説明: 共通ユーティリティ関数
-# 依存: なし
+# File: utils.sh
+# Description: Common utility functions
+# Dependencies: none
 
 # ====================================================================
-# グローバル変数
+# Globals
 # ====================================================================
 
-# ログレベル定義
+# Log level map
 declare -A LOG_LEVELS=(
     [DEBUG]=0
     [INFO]=1
@@ -15,21 +15,21 @@ declare -A LOG_LEVELS=(
     [ERROR]=3
 )
 
-# 現在のログレベル（環境変数から取得、デフォルトはINFO）
+# Current log level (env override, default INFO)
 CURRENT_LOG_LEVEL="${TMUX_SESSION_MANAGER_LOG_LEVEL:-INFO}"
 LOG_FILE="${TMUX_SESSION_MANAGER_LOG_FILE:-/tmp/tmux-session-manager.log}"
 
 # ====================================================================
-# ログ関数
+# Logging
 # ====================================================================
 
-# 関数名: log_message
-# 説明: ログメッセージを出力
-# 引数:
-#   $1 - ログレベル (DEBUG/INFO/WARN/ERROR)
-#   $@ - メッセージ
-# 戻り値: なし
-# 出力: ログファイルへの書き込み、ERRORの場合はtmux表示
+# Function: log_message
+# Description: Append a log line (and show tmux message on ERROR)
+# Args:
+#   $1 - log level (DEBUG/INFO/WARN/ERROR)
+#   $@ - message
+# Returns: none
+# Output: writes to log file, shows tmux message on ERROR
 log_message() {
     local level="$1"
     shift
@@ -37,11 +37,9 @@ log_message() {
     local timestamp
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
-    # レベルチェック
     if [[ ${LOG_LEVELS[$level]:-0} -ge ${LOG_LEVELS[$CURRENT_LOG_LEVEL]:-1} ]]; then
         echo "[${timestamp}] [${level}] ${message}" >> "$LOG_FILE"
 
-        # ERRORの場合はtmuxにも表示
         if [[ "$level" == "ERROR" ]]; then
             tmux display-message "[Error] ${message}" 2>/dev/null || true
         fi
@@ -54,15 +52,15 @@ log_warn()  { log_message WARN "$@"; }
 log_error() { log_message ERROR "$@"; }
 
 # ====================================================================
-# 時間フォーマット関数
+# Time helpers
 # ====================================================================
 
-# 関数名: format_time_ago
-# 説明: Unix timestampから経過時間をフォーマット
-# 引数:
+# Function: format_time_ago
+# Description: Format elapsed time from Unix timestamp
+# Args:
 #   $1 - Unix timestamp
-# 戻り値: 0
-# 出力: "2h", "30m", "3d" などのフォーマット済み文字列
+# Returns: 0
+# Output: formatted string like "2h", "30m", "3d"
 format_time_ago() {
     local timestamp="$1"
     local now
@@ -81,50 +79,50 @@ format_time_ago() {
 }
 
 # ====================================================================
-# アイコン取得関数
+# Icons
 # ====================================================================
 
-# 関数名: get_icon
-# 説明: セッション状態に応じたアイコン取得
-# 引数:
+# Function: get_icon
+# Description: Icon for session state
+# Args:
 #   $1 - session_name
-#   $2 - is_attached (0 or 1以上)
+#   $2 - is_attached (0 or >0)
 #   $3 - is_current (0 or 1)
-# 戻り値: 0
-# 出力: アイコンと色コード
+# Returns: 0
+# Output: icon + color code
 get_icon() {
     local session_name="$1"
     local is_attached="$2"
     local is_current="$3"
 
     if [[ "$is_current" == "1" ]]; then
-        echo -e "\033[1;32m📝\033[0m"  # 緑色の編集アイコン
+        echo -e "\033[1;32m📝\033[0m"  # green edit icon
     elif [[ "$is_attached" -gt 0 ]]; then
-        echo -e "\033[1;33m📎\033[0m"  # 黄色のクリップ
+        echo -e "\033[1;33m📎\033[0m"  # yellow clip
     else
-        echo -e "\033[2;37m💤\033[0m"  # グレーのスリープ
+        echo -e "\033[2;37m💤\033[0m"  # gray sleep
     fi
 }
 
 # ====================================================================
-# 活動マーカー取得関数
+# Activity markers
 # ====================================================================
 
-# 関数名: get_activity_marker
-# 説明: 最終活動時刻に基づく活動マーカー取得
-# 引数:
-#   $1 - 最終活動時刻（Unix timestamp）
-# 戻り値: 0
-# 出力: 活動マーカー（🔥/⚡/空白）
+# Function: get_activity_marker
+# Description: Marker based on last activity time
+# Args:
+#   $1 - last activity (Unix timestamp)
+# Returns: 0
+# Output: marker (🔥 / ⚡ / blank)
 get_activity_marker() {
     local activity="$1"
     local now
     now=$(date +%s)
     local diff=$((now - activity))
 
-    if [[ $diff -lt 300 ]]; then      # 5分以内
+    if [[ $diff -lt 300 ]]; then      # within 5 minutes
         echo "🔥"
-    elif [[ $diff -lt 3600 ]]; then   # 1時間以内
+    elif [[ $diff -lt 3600 ]]; then   # within 1 hour
         echo "⚡"
     else
         echo "  "
@@ -132,33 +130,30 @@ get_activity_marker() {
 }
 
 # ====================================================================
-# バリデーション関数
+# Validation
 # ====================================================================
 
-# 関数名: validate_session_name
-# 説明: セッション名のバリデーション
-# 引数:
-#   $1 - セッション名
-# 戻り値:
-#   0 - 有効
-#   1 - 無効
-# 出力: エラーメッセージ（無効時）
+# Function: validate_session_name
+# Description: Validate session name
+# Args:
+#   $1 - session name
+# Returns:
+#   0 - valid
+#   1 - invalid
+# Output: error message on invalid
 validate_session_name() {
     local name="$1"
 
-    # 空文字チェック
     if [[ -z "$name" ]]; then
         log_error "Session name cannot be empty"
         return 1
     fi
 
-    # 特殊文字チェック（tmux仕様で:は使用不可）
     if [[ "$name" == *:* ]]; then
         log_error "Session name cannot contain ':'"
         return 1
     fi
 
-    # 長さチェック（最大50文字）
     if [[ ${#name} -gt 50 ]]; then
         log_error "Session name too long (max 50 characters)"
         return 1
@@ -168,16 +163,16 @@ validate_session_name() {
 }
 
 # ====================================================================
-# 文字列操作関数
+# String helpers
 # ====================================================================
 
-# 関数名: truncate_string
-# 説明: 文字列を指定長に切り詰め
-# 引数:
-#   $1 - 文字列
-#   $2 - 最大長
-# 戻り値: 0
-# 出力: 切り詰められた文字列
+# Function: truncate_string
+# Description: Truncate string to given length
+# Args:
+#   $1 - string
+#   $2 - max length
+# Returns: 0
+# Output: truncated string
 truncate_string() {
     local str="$1"
     local max_len="$2"
@@ -190,22 +185,21 @@ truncate_string() {
 }
 
 # ====================================================================
-# 依存関係チェック関数
+# Dependency checks
 # ====================================================================
 
-# 関数名: version_compare
-# 説明: バージョン番号の比較
-# 引数:
-#   $1 - バージョン1
-#   $2 - バージョン2（最小要求）
-# 戻り値:
-#   0 - バージョン1 >= バージョン2
-#   1 - バージョン1 < バージョン2
+# Function: version_compare
+# Description: Compare version numbers
+# Args:
+#   $1 - version 1
+#   $2 - version 2 (minimum required)
+# Returns:
+#   0 - version1 >= version2
+#   1 - version1 < version2
 version_compare() {
     local version1="$1"
     local version2="$2"
 
-    # sort -Vでバージョン比較
     if [[ "$(printf '%s\n' "$version1" "$version2" | sort -V | head -n1)" == "$version2" ]]; then
         return 0
     else
@@ -213,18 +207,17 @@ version_compare() {
     fi
 }
 
-# 関数名: check_dependencies
-# 説明: 依存関係チェック
-# 引数: なし
-# 戻り値:
-#   0 - すべての依存関係OK
-#   1 - 依存関係不足
-# 出力: エラーメッセージ（依存不足時）
+# Function: check_dependencies
+# Description: Verify required commands and versions
+# Args: none
+# Returns:
+#   0 - all dependencies available
+#   1 - missing dependencies
+# Output: error messages when missing
 check_dependencies() {
     local missing_deps=()
     local errors=0
 
-    # tmuxバージョンチェック
     if ! command -v tmux &> /dev/null; then
         missing_deps+=("tmux")
         errors=1
@@ -238,7 +231,6 @@ check_dependencies() {
         fi
     fi
 
-    # fzfチェック
     if ! command -v fzf &> /dev/null; then
         missing_deps+=("fzf")
         errors=1
@@ -251,7 +243,6 @@ check_dependencies() {
         fi
     fi
 
-    # bashバージョンチェック
     local bash_version="${BASH_VERSION%%.*}"
     if [[ $bash_version -lt 4 ]]; then
         log_error "bash version 4.0 or higher required (found: $BASH_VERSION)"
@@ -267,16 +258,16 @@ check_dependencies() {
 }
 
 # ====================================================================
-# エラーハンドリング関数
+# Error handling
 # ====================================================================
 
-# 関数名: safe_tmux
-# 説明: tmuxコマンドの安全な実行
-# 引数:
-#   $@ - tmuxコマンドの引数
-# 戻り値:
-#   tmuxコマンドの終了コード
-# 出力: tmuxコマンドの出力
+# Function: safe_tmux
+# Description: Safe wrapper around tmux command
+# Args:
+#   $@ - tmux command args
+# Returns:
+#   tmux exit code
+# Output: tmux stdout/stderr
 safe_tmux() {
     local output
     local exit_code

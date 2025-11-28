@@ -65,6 +65,7 @@ tmux source-file ~/.tmux.conf
 - `Ctrl-r`: セッション名変更
 - `Ctrl-x`: セッション削除
 - `Ctrl-/`: プレビュー表示/非表示
+- `Ctrl-l`: プレビュー内容を手動で再取得
 - `q`: 終了
 
 **ウィンドウ詳細モード:**
@@ -104,12 +105,18 @@ set -g @session-manager-fzf-border 'none'
 # プレビューウィンドウ幅
 set -g @session-manager-preview-width '65'
 
+# プレビュー自動更新間隔(ms) 0で単発描画
+set -g @session-manager-preview-refresh-ms '1000'
+
 # デバッグモード
 set -g @session-manager-debug '1'
 ```
 
 `@session-manager-popup-border` は `off`, `false`, `0`, `none` のいずれかを指定すると枠線を描画しません。  
 `@session-manager-fzf-border` には `rounded`（デフォルト）, `sharp`, `none` など `fzf --border`で受け付ける値を指定できます。
+
+`@session-manager-preview-refresh-ms` でプレビューの再描画間隔をミリ秒指定します。  
+`0` なら一度だけ描画、`500` なら0.5秒ごとに更新します。自動更新を無効にしていても `Ctrl-l` で即時リフレッシュできます。
 
 ## 利用可能なテーマ
 

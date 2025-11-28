@@ -65,6 +65,7 @@ Override the key with `set -g @session-manager-key 'C-s'` (triggered as `prefix 
 - `Ctrl-r`: Rename a session
 - `Ctrl-x`: Delete a session
 - `Ctrl-/`: Toggle preview
+- `Ctrl-l`: Refresh preview content on demand
 - `q`: Quit
 
 **Window detail mode**
@@ -104,12 +105,18 @@ set -g @session-manager-fzf-border 'none'
 # Preview width
 set -g @session-manager-preview-width '65'
 
+# Preview auto-refresh interval in milliseconds (0 = single-shot preview)
+set -g @session-manager-preview-refresh-ms '1000'
+
 # Debug logging
 set -g @session-manager-debug '1'
 ```
 
 `@session-manager-popup-border` hides the popup frame when set to `off`, `false`, `0`, or `none`.  
 `@session-manager-fzf-border` forwards its value to `fzf --border`, so you can choose `rounded` (default), `sharp`, `none`, and more.
+
+`@session-manager-preview-refresh-ms` controls how often the preview pane is re-rendered.  
+Set it to `0` to render only once, or use e.g. `500` (0.5s) for near–real-time updates. `Ctrl-l` always forces an immediate refresh even when auto-refresh is off.
 
 ## Themes
 

@@ -1,43 +1,43 @@
 #!/usr/bin/env bash
-# ファイル名: config.sh
-# 説明: 設定管理
-# 依存: なし
+# File: config.sh
+# Description: Configuration management for tmux-session-manager
+# Dependencies: none
 
 # ====================================================================
-# デフォルト設定
+# Default settings
 # ====================================================================
 
-# ポップアップサイズ
+# Popup sizing
 readonly DEFAULT_POPUP_WIDTH="70%"
 readonly DEFAULT_POPUP_HEIGHT="70%"
 readonly DEFAULT_PREVIEW_WIDTH="75"
 readonly DEFAULT_PREVIEW_REFRESH_MS="1000"
 
-# ポップアップ/枠線
+# Popup/border
 readonly DEFAULT_POPUP_BORDER="on"
 readonly DEFAULT_FZF_BORDER="none"
 
-# カラーテーマ
+# Color theme
 readonly DEFAULT_THEME="tokyonight"
 
-# キーバインド
+# Key binding
 readonly DEFAULT_KEY_BINDING="C-s"
 
-# ログ設定
+# Logging
 readonly DEFAULT_LOG_LEVEL="INFO"
 readonly DEFAULT_LOG_FILE="/tmp/tmux-session-manager.log"
 
 # ====================================================================
-# tmux.confから設定取得
+# Read settings from tmux.conf
 # ====================================================================
 
-# 関数名: get_tmux_option
-# 説明: tmux.confからオプション値を取得
-# 引数:
-#   $1 - オプション名（@プレフィックスなし）
-#   $2 - デフォルト値
-# 戻り値: 0
-# 出力: オプション値（設定されていればその値、なければデフォルト値）
+# Function: get_tmux_option
+# Description: Fetch option value from tmux.conf
+# Args:
+#   $1 - option name (without @ prefix)
+#   $2 - default value
+# Returns: 0
+# Output: resolved option value or default
 get_tmux_option() {
     local option="$1"
     local default="$2"
@@ -48,10 +48,10 @@ get_tmux_option() {
 }
 
 # ====================================================================
-# グローバル変数設定
+# Exported variables
 # ====================================================================
 
-# ポップアップ設定
+# Popup settings
 export POPUP_WIDTH=$(get_tmux_option "session-manager-popup-width" "$DEFAULT_POPUP_WIDTH")
 export POPUP_HEIGHT=$(get_tmux_option "session-manager-popup-height" "$DEFAULT_POPUP_HEIGHT")
 export PREVIEW_WIDTH=$(get_tmux_option "session-manager-preview-width" "$DEFAULT_PREVIEW_WIDTH")
@@ -59,26 +59,26 @@ export PREVIEW_REFRESH_MS=$(get_tmux_option "session-manager-preview-refresh-ms"
 export POPUP_BORDER=$(get_tmux_option "session-manager-popup-border" "$DEFAULT_POPUP_BORDER")
 export FZF_BORDER_STYLE=$(get_tmux_option "session-manager-fzf-border" "$DEFAULT_FZF_BORDER")
 
-# テーマ設定
+# Theme
 export THEME=$(get_tmux_option "session-manager-theme" "$DEFAULT_THEME")
 
-# ログ設定
+# Logging
 export LOG_LEVEL=$(get_tmux_option "session-manager-log-level" "$DEFAULT_LOG_LEVEL")
 export LOG_FILE=$(get_tmux_option "session-manager-log-file" "$DEFAULT_LOG_FILE")
 
-# デバッグモード
+# Debug flag
 export DEBUG_MODE=$(get_tmux_option "session-manager-debug" "0")
 
 # ====================================================================
-# fzfオプション構築
+# fzf option builders
 # ====================================================================
 
-# 関数名: get_theme_colors
-# 説明: テーマに応じたfzfカラー設定を取得
-# 引数:
-#   $1 - テーマ名
-# 戻り値: 0
-# 出力: fzfカラー設定文字列
+# Function: get_theme_colors
+# Description: Return fzf color scheme for the given theme
+# Args:
+#   $1 - theme name
+# Returns: 0
+# Output: fzf color options string
 get_theme_colors() {
     local theme="$1"
 
@@ -93,7 +93,7 @@ get_theme_colors() {
             echo ""
             ;;
         *)
-            # 不明なテーマの場合は警告してデフォルトを使用
+            # Warn and fall back to default when theme is unknown
             if command -v log_warn &> /dev/null; then
                 log_warn "Unknown theme: $theme, using default"
             fi
@@ -102,11 +102,11 @@ get_theme_colors() {
     esac
 }
 
-# 関数名: get_base_fzf_options
-# 説明: 基本fzfオプションを構築
-# 引数: なし
-# 戻り値: 0
-# 出力: fzf基本オプション文字列
+# Function: get_base_fzf_options
+# Description: Build base fzf options
+# Args: none
+# Returns: 0
+# Output: fzf base option string
 get_base_fzf_options() {
     local theme_colors
     theme_colors=$(get_theme_colors "$THEME")
@@ -124,11 +124,11 @@ get_base_fzf_options() {
     echo "--ansi ${border_option} --height=100% $theme_colors"
 }
 
-# 関数名: get_preview_window_options
-# 説明: プレビューウィンドウオプションを構築
-# 引数: なし
-# 戻り値: 0
-# 出力: プレビューウィンドウオプション文字列
+# Function: get_preview_window_options
+# Description: Build preview window options
+# Args: none
+# Returns: 0
+# Output: preview window option string
 get_preview_window_options() {
     echo "right:${PREVIEW_WIDTH}%:border-left"
 }

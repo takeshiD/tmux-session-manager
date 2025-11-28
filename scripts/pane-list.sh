@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# ファイル名: pane-list.sh
-# 説明: ペーン一覧生成
-# 依存: config.sh, utils.sh
+# File: pane-list.sh
+# Description: Generate pane list
+# Dependencies: config.sh, utils.sh
 
 set -euo pipefail
 
@@ -14,18 +14,18 @@ source "${CURRENT_DIR}/config.sh"
 source "${CURRENT_DIR}/utils.sh"
 
 # ====================================================================
-# 関数定義
+# Function definitions
 # ====================================================================
 
-# 関数名: get_panes
-# 説明: ペーン情報を取得
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
-# 出力: ペーン情報（パイプ区切り）
+# Function: get_panes
+# Description: Fetch pane info
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+# Returns:
+#   0 - success
+#   1 - error
+# Output: pane info (pipe-delimited)
 get_panes() {
     local session_name="$1"
     local window_index="$2"
@@ -38,12 +38,12 @@ get_panes() {
     }
 }
 
-# 関数名: get_command_icon
-# 説明: コマンドに応じたアイコンを取得
-# 引数:
-#   $1 - コマンド名
-# 戻り値: 0
-# 出力: アイコン
+# Function: get_command_icon
+# Description: Return an icon based on the command name
+# Args:
+#   $1 - command name
+# Returns: 0
+# Output: icon character
 get_command_icon() {
     local cmd="$1"
 
@@ -58,16 +58,16 @@ get_command_icon() {
     esac
 }
 
-# 関数名: format_pane_line
-# 説明: 1ペーンの行をフォーマット
-# 引数:
+# Function: format_pane_line
+# Description: Format one pane line for fzf
+# Args:
 #   $1 - index
 #   $2 - command
 #   $3 - width
 #   $4 - height
 #   $5 - active
-# 戻り値: 0
-# 出力: フォーマット済み行
+# Returns: 0
+# Output: formatted line
 format_pane_line() {
     local index="$1"
     local cmd="$2"
@@ -75,7 +75,6 @@ format_pane_line() {
     local height="$4"
     local active="$5"
 
-    # アクティブマーカー
     local marker color
     if [[ "$active" == "1" ]]; then
         marker="❯"
@@ -85,32 +84,30 @@ format_pane_line() {
         color="\033[0m"
     fi
 
-    # コマンドアイコン
     local icon
     icon=$(get_command_icon "$cmd")
 
-    # コマンド名を切り詰め
     local display_cmd
     display_cmd=$(truncate_string "$cmd" 15)
     display_cmd=$(printf "%-15s" "$display_cmd")
 
-    # 出力形式: "<index>\t<表示文字列>"
+    # Output format: "<index>\t<display string>"
     printf "%s\t%b%s %s %s \033[2m(%dx%d)\033[0m\n" \
         "$index" "$color" "$marker" "$icon" "$display_cmd" "$width" "$height"
 }
 
 # ====================================================================
-# メイン処理
+# Main
 # ====================================================================
 
-# 関数名: main
-# 説明: ペーン一覧を生成して標準出力
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: main
+# Description: Generate pane list and print to stdout
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+# Returns:
+#   0 - success
+#   1 - error
 main() {
     local session_name="${1:-}"
     local window_index="${2:-}"
@@ -122,7 +119,6 @@ main() {
 
     log_debug "Generating pane list for window: $session_name:$window_index"
 
-    # ペーン一覧取得
     local panes
     if ! panes=$(get_panes "$session_name" "$window_index"); then
         log_error "Failed to get panes"
@@ -130,7 +126,6 @@ main() {
         return 1
     fi
 
-    # フォーマット
     echo "$panes" | while IFS='|' read -r index cmd width height active; do
         format_pane_line "$index" "$cmd" "$width" "$height" "$active"
     done

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# ファイル名: actions.sh
-# 説明: CRUD操作（セッション作成・削除・リネーム）
-# 依存: config.sh, utils.sh
+# File: actions.sh
+# Description: CRUD actions (create / delete / rename sessions)
+# Dependencies: config.sh, utils.sh
 
 set -euo pipefail
 
@@ -14,15 +14,15 @@ source "${CURRENT_DIR}/config.sh"
 source "${CURRENT_DIR}/utils.sh"
 
 # ====================================================================
-# 関数定義
+# Function definitions
 # ====================================================================
 
-# 関数名: action_new
-# 説明: 新規セッション作成
-# 引数: なし（標準入力から名前を読み取る）
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: action_new
+# Description: Create a new session
+# Args: none (reads name from fzf)
+# Returns:
+#   0 - success
+#   1 - error
 action_new() {
     log_info "Creating new session"
     local fzf_out fzf_status new_name
@@ -37,35 +37,34 @@ action_new() {
     fzf_status=${PIPESTATUS[0]}
     set -o pipefail
 
-    # --print-query により1行目が入力内容、2行目が選択結果になるため入力値を取得
+    # --print-query returns query on first line, selection on second; grab the query
     new_name=$(printf '%s' "$fzf_out" | head -n1)
     log_info "New session name: $new_name"
-    # fzf起動に失敗した場合
+    # fzf aborted
     if [[ $fzf_status -ne 0 ]]; then
         log_error "fzf aborted for new session name"
         return 1
     fi
 
-    # キャンセルチェック（空入力）
+    # Cancel when empty input
     if [[ -z "$new_name" ]]; then
         log_info "New session creation cancelled"
         return 0
     fi
 
-    # バリデーション
     if ! validate_session_name "$new_name"; then
         tmux display-message "Error: Invalid session name"
         return 1
     fi
 
-    # 重複チェック
+    # Duplication check
     if tmux has-session -t "$new_name" 2>/dev/null; then
         log_error "Session already exists: $new_name"
         tmux display-message "Error: Session '$new_name' already exists"
         return 1
     fi
 
-    # セッション作成
+    # Create session
     if tmux new-session -d -s "$new_name"; then
         log_info "Created session: $new_name"
         tmux display-message "Created session '$new_name'"
@@ -77,19 +76,19 @@ action_new() {
     fi
 }
 
-# 関数名: action_rename
-# 説明: セッション名変更
-# 引数:
-#   $1 - 現在のセッション名
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: action_rename
+# Description: Rename a session
+# Args:
+#   $1 - currentsession name
+# Returns:
+#   0 - success
+#   1 - error
 action_rename() {
     local session_name="$1"
 
     log_info "Renaming session: $session_name"
 
-    # 新しい名前入力（初期値は現在の名前）
+    # Prompt for new name (prefill current)
     local fzf_out fzf_status new_name
     set +o pipefail
     exist_sessions=$(tmux list-sessions -F "#S")
@@ -102,7 +101,7 @@ action_rename() {
     fzf_status=${PIPESTATUS[0]}
     set -o pipefail
 
-    # --print-query の1行目がユーザーが入力した最新の名前
+    # First line from --print-query is latest user input
     new_name=$(printf '%s' "$fzf_out" | head -n1)
 
     if [[ $fzf_status -ne 0 ]]; then
@@ -110,32 +109,31 @@ action_rename() {
         return 1
     fi
 
-    # キャンセルチェック
+    # Cancel when empty input
     if [[ -z "$new_name" ]]; then
         log_info "Rename cancelled"
         return 0
     fi
 
-    # 変更なしチェック
+    # No change
     if [[ "$new_name" == "$session_name" ]]; then
         log_info "No change in session name"
         return 0
     fi
 
-    # バリデーション
     if ! validate_session_name "$new_name"; then
         tmux display-message "Error: Invalid session name"
         return 1
     fi
 
-    # 重複チェック
+    # Duplication check
     if tmux has-session -t "$new_name" 2>/dev/null; then
         log_error "Session already exists: $new_name"
         tmux display-message "Error: Session '$new_name' already exists"
         return 1
     fi
 
-    # リネーム実行
+    # Perform rename
     if tmux rename-session -t "$session_name" "$new_name"; then
         log_info "Renamed session: $session_name -> $new_name"
         tmux display-message "Renamed session '$session_name' to '$new_name'"
@@ -147,19 +145,19 @@ action_rename() {
     fi
 }
 
-# 関数名: action_kill
-# 説明: セッション削除
-# 引数:
-#   $1 - セッション名
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: action_kill
+# Description: Delete a session
+# Args:
+#   $1 - session name
+# Returns:
+#   0 - success
+#   1 - error
 action_kill() {
     local session_name="$1"
 
     log_info "Attempting to kill session: $session_name"
 
-    # 確認プロンプト
+    # Confirmation prompt
     local confirm
     confirm=$(echo -e "No\nYes" | fzf \
         --prompt="Kill session '$session_name'? " \
@@ -167,13 +165,13 @@ action_kill() {
         --height=5 \
         --border=rounded)
 
-    # キャンセルまたはNo選択
+    # Cancel when anything but Yes
     if [[ "$confirm" != "Yes" ]]; then
         log_info "Kill session cancelled"
         return 0
     fi
 
-    # 最後のセッションチェック
+    # Do not allow deleting the last session
     local session_count
     session_count=$(tmux list-sessions 2>/dev/null | wc -l)
     if [[ $session_count -eq 1 ]]; then
@@ -182,12 +180,11 @@ action_kill() {
         return 1
     fi
 
-    # 現在のセッションかどうか確認
+    # If killing the current session, switch first
     local current_session
     current_session=$(tmux display-message -p '#S' 2>/dev/null)
 
     if [[ "$session_name" == "$current_session" ]]; then
-        # 現在のセッションの場合は別のセッションに切り替えてから削除
         log_debug "Killing current session, switching to another first"
 
         local other_session
@@ -200,11 +197,10 @@ action_kill() {
             return 1
         fi
 
-        # 別のセッションに切り替え
         tmux switch-client -t "$other_session"
     fi
 
-    # セッション削除
+    # Delete session
     if tmux kill-session -t "$session_name"; then
         log_info "Killed session: $session_name"
         tmux display-message "Killed session '$session_name'"
@@ -217,17 +213,17 @@ action_kill() {
 }
 
 # ====================================================================
-# メイン処理
+# Main
 # ====================================================================
 
-# 関数名: main
-# 説明: アクションのディスパッチャ
-# 引数:
-#   $1 - アクション (new/rename/kill)
-#   $2 - セッション名（renameとkillで必要）
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: main
+# Description: Action dispatcher
+# Args:
+#   $1 - action (new/rename/kill)
+#   $2 - session name (required for rename/kill)
+# Returns:
+#   0 - success
+#   1 - error
 main() {
     local action="${1:-}"
     local session_name="${2:-}"

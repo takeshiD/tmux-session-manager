@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# ファイル名: default.sh
-# 説明: デフォルト カラーテーマ
-# 依存: なし
+# File: default.sh
+# Description: Default color theme
+# Dependencies: none
 
-# デフォルトテーマ（tmuxのデフォルトカラーを使用）
-# fzf用カラー文字列は空（fzfのデフォルトを使用）
+# Default theme uses tmux/fzf defaults
 THEME_FZF_COLORS=""

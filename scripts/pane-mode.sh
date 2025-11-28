@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# ファイル名: pane-mode.sh
-# 説明: ペーン選択モード
-# 依存: config.sh, utils.sh, pane-list.sh, preview-pane.sh
+# File: pane-mode.sh
+# Description: Pane selection mode
+# Dependencies: config.sh, utils.sh, pane-list.sh, preview-pane.sh
 
 set -euo pipefail
 
@@ -14,16 +14,16 @@ source "${CURRENT_DIR}/config.sh"
 source "${CURRENT_DIR}/utils.sh"
 
 # ====================================================================
-# 関数定義
+# Function definitions
 # ====================================================================
 
-# 関数名: build_fzf_options
-# 説明: fzfオプションを構築
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-# 戻り値: 0
-# 出力: fzfオプション文字列
+# Function: build_fzf_options
+# Description: Build fzf options
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+# Returns: 0
+# Output: fzf option string
 build_fzf_options() {
     local session_name="$1"
     local window_index="$2"
@@ -48,15 +48,15 @@ build_fzf_options() {
         --bind='q:abort'"
 }
 
-# 関数名: switch_to_pane
-# 説明: ペーン切り替えを実行
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-#   $3 - ペーンindex
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: switch_to_pane
+# Description: Switch to the specified pane
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+#   $3 - paneindex
+# Returns:
+#   0 - success
+#   1 - error
 switch_to_pane() {
     local session_name="$1"
     local window_index="$2"
@@ -70,13 +70,13 @@ switch_to_pane() {
         return 1
     fi
 
-    # ウィンドウも選択
+    # Ensure the window is selected too
     if ! tmux select-window -t "${session_name}:${window_index}" 2>/dev/null; then
         log_error "Failed to select window"
         return 1
     fi
 
-    # セッションに切り替え
+    # Then switch the client to the session
     if ! tmux switch-client -t "$session_name" 2>/dev/null; then
         log_error "Failed to switch client to session"
         return 1
@@ -85,13 +85,13 @@ switch_to_pane() {
     return 0
 }
 
-# 関数名: process_result
-# 説明: fzf結果を処理
-# 引数:
-#   $1 - fzf結果
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: process_result
+# Description: Handle the fzf result
+# Args:
+#   $1 - fzf result
+# Returns:
+#   0 - success
+#   1 - error
 process_result() {
     local result="$1"
 
@@ -102,7 +102,7 @@ process_result() {
 
     log_debug "Result: $result"
 
-    # become経由の場合、"switch-pane セッション名 ウィンドウindex ペーンindex" の形式
+    # Via become: "switch-pane <session> <window_index> <pane_index>"
     if [[ "$result" =~ ^switch-pane ]]; then
         local session_name window_index pane_index
         session_name=$(echo "$result" | awk '{print $2}')
@@ -113,17 +113,17 @@ process_result() {
 }
 
 # ====================================================================
-# メイン処理
+# Main
 # ====================================================================
 
-# 関数名: main
-# 説明: ペーン選択モードのメイン処理
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: main
+# Description: Entry point for pane selection mode
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+# Returns:
+#   0 - success
+#   1 - error
 main() {
     local session_name="${1:-}"
     local window_index="${2:-}"
@@ -135,7 +135,6 @@ main() {
 
     log_info "Starting pane-mode for window: $session_name:$window_index"
 
-    # ペーン一覧生成
     local pane_list
     if ! pane_list=$(bash "${CURRENT_DIR}/pane-list.sh" "$session_name" "$window_index"); then
         log_error "Failed to generate pane list"
@@ -143,20 +142,17 @@ main() {
         return 1
     fi
 
-    # fzfオプション構築
     local fzf_options
     fzf_options=$(build_fzf_options "$session_name" "$window_index")
 
     log_debug "fzf options: $fzf_options"
 
-    # fzf起動
     local result
     result=$(echo "$pane_list" | eval "fzf $fzf_options") || {
         log_info "User cancelled selection"
         return 0
     }
 
-    # 結果処理
     process_result "$result"
 
     log_info "pane-mode finished"

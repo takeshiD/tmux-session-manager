@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# ファイル名: window-list.sh
-# 説明: ウィンドウ一覧生成
-# 依存: config.sh, utils.sh
+# File: window-list.sh
+# Description: Generate a list of windows for a session
+# Dependencies: config.sh, utils.sh
 
 set -euo pipefail
 
@@ -14,17 +14,17 @@ source "${CURRENT_DIR}/config.sh"
 source "${CURRENT_DIR}/utils.sh"
 
 # ====================================================================
-# 関数定義
+# Function definitions
 # ====================================================================
 
-# 関数名: get_windows
-# 説明: ウィンドウ情報を取得
-# 引数:
-#   $1 - セッション名
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
-# 出力: ウィンドウ情報（パイプ区切り）
+# Function: get_windows
+# Description: Fetch window metadata for a session
+# Args:
+#   $1 - session name
+# Returns:
+#   0 on success
+#   1 on error
+# Output: window info as pipe-delimited lines
 get_windows() {
     local session_name="$1"
 
@@ -36,38 +36,37 @@ get_windows() {
     }
 }
 
-# 関数名: get_layout_icon
-# 説明: ペーン数に応じたレイアウトアイコンを取得
-# 引数:
-#   $1 - ペーン数
-# 戻り値: 0
-# 出力: レイアウトアイコン
+# Function: get_layout_icon
+# Description: Return a layout icon based on pane count
+# Args:
+#   $1 - pane count
+# Returns: 0
+# Output: layout icon character
 get_layout_icon() {
     local panes="$1"
 
     if [[ $panes -eq 1 ]]; then
-        echo "▢"  # 単一ペーン
+        echo "▢"  # single pane
     else
-        echo "⊞"  # 複数ペーン
+        echo "⊞"  # multiple panes
     fi
 }
 
-# 関数名: format_window_line
-# 説明: 1ウィンドウの行をフォーマット
-# 引数:
+# Function: format_window_line
+# Description: Format one window line for fzf
+# Args:
 #   $1 - index
 #   $2 - name
 #   $3 - panes
 #   $4 - active
-# 戻り値: 0
-# 出力: フォーマット済み行
+# Returns: 0
+# Output: formatted line
 format_window_line() {
     local index="$1"
     local name="$2"
     local panes="$3"
     local active="$4"
 
-    # アクティブマーカー
     local marker color
     if [[ "$active" == "1" ]]; then
         marker="❯"
@@ -77,31 +76,29 @@ format_window_line() {
         color="\033[0m"
     fi
 
-    # レイアウトアイコン
     local layout_icon
     layout_icon=$(get_layout_icon "$panes")
 
-    # ウィンドウ名を切り詰め
     local display_name
     display_name=$(truncate_string "$name" 25)
     display_name=$(printf "%-25s" "$display_name")
 
-    # 出力形式: "<index>\t<表示用文字列>" として、fzfでindexを第1フィールドに利用する
+    # Output format: "<index>\t<display text>" so fzf can use index as the first field
     printf "%s\t%b%s %s %s \033[2m[%dP]\033[0m\n" \
         "$index" "$color" "$marker" "$display_name" "$layout_icon" "$panes"
 }
 
 # ====================================================================
-# メイン処理
+# Main
 # ====================================================================
 
-# 関数名: main
-# 説明: ウィンドウ一覧を生成して標準出力
-# 引数:
-#   $1 - セッション名
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: main
+# Description: Generate window list and print to stdout
+# Args:
+#   $1 - session name
+# Returns:
+#   0 on success
+#   1 on error
 main() {
     local session_name="${1:-}"
 
@@ -112,7 +109,6 @@ main() {
 
     log_debug "Generating window list for session: $session_name"
 
-    # ウィンドウ一覧取得
     local windows
     if ! windows=$(get_windows "$session_name"); then
         log_error "Failed to get windows"
@@ -120,7 +116,6 @@ main() {
         return 1
     fi
 
-    # フォーマット
     echo "$windows" | while IFS='|' read -r index name panes active; do
         format_window_line "$index" "$name" "$panes" "$active"
     done

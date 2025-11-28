@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# ファイル名: preview-session.sh
-# 説明: セッションプレビュー生成
-# 依存: config.sh, utils.sh
+# File: preview-session.sh
+# Description: Render session preview
+# Dependencies: config.sh, utils.sh
 
 set -euo pipefail
 
@@ -14,7 +14,7 @@ source "${CURRENT_DIR}/config.sh"
 source "${CURRENT_DIR}/utils.sh"
 
 # ====================================================================
-# 定数
+# Constants
 # ====================================================================
 
 readonly BOX_WIDTH=60
@@ -22,15 +22,15 @@ readonly PREVIEW_LINES=15
 PREVIEW_REFRESH_MS="${PREVIEW_REFRESH_MS:-0}"
 
 # ====================================================================
-# 関数定義
+# Function definitions
 # ====================================================================
 
-# 関数名: print_header
-# 説明: ヘッダーボックスを生成
-# 引数:
-#   $1 - セッション名
-# 戻り値: 0
-# 出力: ヘッダーボックス
+# Function: print_header
+# Description: Render header box
+# Args:
+#   $1 - session name
+# Returns: 0
+# Output: header box
 print_header() {
     local session_name="$1"
     local name_display
@@ -44,14 +44,14 @@ print_header() {
     echo
 }
 
-# 関数名: get_session_info
-# 説明: セッション基本情報を取得
-# 引数:
-#   $1 - セッション名
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
-# 出力: セッション情報（パイプ区切り）
+# Function: get_session_info
+# Description: Fetch basic session info
+# Args:
+#   $1 - session name
+# Returns:
+#   0 - success
+#   1 - error
+# Output: session info (pipe-delimited)
 get_session_info() {
     local session_name="$1"
 
@@ -67,16 +67,16 @@ get_session_info() {
     echo "$info"
 }
 
-# 関数名: print_session_info
-# 説明: セッション情報を表示
-# 引数:
+# Function: print_session_info
+# Description: Show session info
+# Args:
 #   $1 - session_name
 #   $2 - attached
 #   $3 - windows
 #   $4 - created
 #   $5 - activity
-# 戻り値: 0
-# 出力: フォーマット済みセッション情報
+# Returns: 0
+# Output: formatted session info
 print_session_info() {
     local session_name="$1"
     local attached="$2"
@@ -101,14 +101,14 @@ print_session_info() {
     echo
 }
 
-# 関数名: get_windows
-# 説明: ウィンドウ一覧を取得
-# 引数:
-#   $1 - セッション名
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
-# 出力: ウィンドウ情報（パイプ区切り）
+# Function: get_windows
+# Description: Fetch window list
+# Args:
+#   $1 - session name
+# Returns:
+#   0 - success
+#   1 - error
+# Output: window info (pipe-delimited)
 get_windows() {
     local session_name="$1"
 
@@ -120,12 +120,12 @@ get_windows() {
     }
 }
 
-# 関数名: print_windows
-# 説明: ウィンドウ一覧を表示
-# 引数:
-#   $1 - セッション名
-# 戻り値: 0
-# 出力: フォーマット済みウィンドウ一覧
+# Function: print_windows
+# Description: Show window list
+# Args:
+#   $1 - session name
+# Returns: 0
+# Output: formatted window list
 print_windows() {
     local session_name="$1"
 
@@ -154,16 +154,15 @@ print_windows() {
     echo
 }
 
-# 関数名: print_active_pane_preview
-# 説明: アクティブウィンドウのペーンプレビューを表示
-# 引数:
-#   $1 - セッション名
-# 戻り値: 0
-# 出力: ペーン内容プレビュー
+# Function: print_active_pane_preview
+# Description: Show active window pane preview
+# Args:
+#   $1 - session name
+# Returns: 0
+# Output: pane content preview
 print_active_pane_preview() {
     local session_name="$1"
 
-    # アクティブウィンドウindex取得
     local active_window
     active_window=$(tmux list-windows -t "$session_name" \
         -F "#{window_index}|#{window_active}" 2>/dev/null | \
@@ -186,27 +185,24 @@ print_active_pane_preview() {
     fi
 }
 
-# 関数名: render_preview
-# 説明: 単一回のプレビュー描画
-# 引数:
-#   $1 - セッション名
-# 戻り値: 0 成功 / 1 失敗
+# Function: render_preview
+# Description: Render preview once
+# Args:
+#   $1 - session name
+# Returns: 0 success / 1 failure
 render_preview() {
     local session_name="$1"
 
     log_debug "Generating preview for session: $session_name"
 
-    # セッション情報取得
     local info
     if ! info=$(get_session_info "$session_name"); then
         echo "Error: Session not found"
         return 1
     fi
 
-    # パース
     IFS='|' read -r name attached windows created activity <<< "$info"
 
-    # 描画
     print_header "$name"
     print_session_info "$name" "$attached" "$windows" "$created" "$activity"
     print_windows "$name"
@@ -217,32 +213,31 @@ render_preview() {
 }
 
 # ====================================================================
-# メイン処理
+# Main
 # ====================================================================
 
-# 関数名: main
-# 説明: セッションプレビューを生成
-# 引数:
-#   $1 - セッション名
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: main
+# Description: Generate session preview (optionally looping)
+# Args:
+#   $1 - session name
+# Returns:
+#   0 - success
+#   1 - error
 main() {
     local session_name="$1"
     local refresh_ms="$PREVIEW_REFRESH_MS"
 
-    # 数値バリデーション（非数値は0扱い）
+    # Validate number; treat non-numeric as 0
     if ! [[ "$refresh_ms" =~ ^[0-9]+$ ]]; then
         refresh_ms=0
     fi
 
-    # ループ更新が有効な場合は連続描画
     if (( refresh_ms > 0 )); then
         local interval_sec
         interval_sec=$(awk -v ms="$refresh_ms" 'BEGIN {printf "%.3f", ms/1000}')
         trap 'exit 0' INT TERM
         while true; do
-            # 画面クリアして最新内容に置き換え
+            # clear the screen then redraw
             printf '\033[H\033[2J'
             if ! render_preview "$session_name"; then
                 sleep "$interval_sec"
@@ -255,7 +250,7 @@ main() {
     fi
 }
 
-# 引数チェック
+# Argument check
 if [[ $# -lt 1 ]]; then
     echo "Usage: $0 <session_name>"
     exit 1

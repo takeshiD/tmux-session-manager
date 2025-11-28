@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# ファイル名: preview-window.sh
-# 説明: ウィンドウプレビュー生成
-# 依存: config.sh, utils.sh
+# File: preview-window.sh
+# Description: Render window preview
+# Dependencies: config.sh, utils.sh
 
 set -euo pipefail
 
@@ -14,24 +14,24 @@ source "${CURRENT_DIR}/config.sh"
 source "${CURRENT_DIR}/utils.sh"
 
 # ====================================================================
-# 定数
+# Constants
 # ====================================================================
 
 readonly BOX_WIDTH=60
 readonly PANE_PREVIEW_LINES=8
 
 # ====================================================================
-# 関数定義
+# Function definitions
 # ====================================================================
 
-# 関数名: print_header
-# 説明: ヘッダーボックスを生成
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-#   $3 - ウィンドウ名
-# 戻り値: 0
-# 出力: ヘッダーボックス
+# Function: print_header
+# Description: Render header box
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+#   $3 - window name
+# Returns: 0
+# Output: header box
 print_header() {
     local session_name="$1"
     local window_index="$2"
@@ -49,15 +49,15 @@ print_header() {
     echo
 }
 
-# 関数名: get_window_info
-# 説明: ウィンドウ基本情報を取得
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
-# 出力: ウィンドウ情報（パイプ区切り）
+# Function: get_window_info
+# Description: Fetch window metadata
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+# Returns:
+#   0 - success
+#   1 - error
+# Output: window info (pipe-delimited)
 get_window_info() {
     local session_name="$1"
     local window_index="$2"
@@ -75,14 +75,14 @@ get_window_info() {
     echo "$info"
 }
 
-# 関数名: print_panes_list
-# 説明: ペーン一覧を表示
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-#   $3 - ペーン数
-# 戻り値: 0
-# 出力: ペーン一覧
+# Function: print_panes_list
+# Description: Show pane list
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+#   $3 - pane count
+# Returns: 0
+# Output: pane list
 print_panes_list() {
     local session_name="$1"
     local window_index="$2"
@@ -105,7 +105,6 @@ print_panes_list() {
             color="\033[2m"
         fi
 
-        # コマンドアイコン
         local icon
         case "$cmd" in
             vim|nvim) icon="📝" ;;
@@ -121,14 +120,14 @@ print_panes_list() {
     echo
 }
 
-# 関数名: print_panes_preview
-# 説明: 各ペインの内容プレビューを表示
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-#   $3 - ペーン数
-# 戻り値: 0
-# 出力: ペーン内容プレビュー
+# Function: print_panes_preview
+# Description: Show preview for each pane
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+#   $3 - pane count
+# Returns: 0
+# Output: pane content previews
 print_panes_preview() {
     local session_name="$1"
     local window_index="$2"
@@ -152,17 +151,17 @@ print_panes_preview() {
 }
 
 # ====================================================================
-# メイン処理
+# Main
 # ====================================================================
 
-# 関数名: main
-# 説明: ウィンドウプレビューを生成
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: main
+# Description: Generate window preview
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+# Returns:
+#   0 - success
+#   1 - error
 main() {
     local session_name="${1:-}"
     local window_index="${2:-}"
@@ -174,17 +173,14 @@ main() {
 
     log_debug "Generating preview for window: $session_name:$window_index"
 
-    # ウィンドウ情報取得
     local info
     if ! info=$(get_window_info "$session_name" "$window_index"); then
         echo "Error: Window not found"
         return 1
     fi
 
-    # パース
     IFS='|' read -r idx name panes <<< "$info"
 
-    # 描画
     print_header "$session_name" "$idx" "$name"
     print_panes_list "$session_name" "$idx" "$panes"
     print_panes_preview "$session_name" "$idx" "$panes"

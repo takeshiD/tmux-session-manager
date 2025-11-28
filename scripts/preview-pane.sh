@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# ファイル名: preview-pane.sh
-# 説明: ペーンプレビュー生成
-# 依存: config.sh, utils.sh
+# File: preview-pane.sh
+# Description: Render pane preview
+# Dependencies: config.sh, utils.sh
 
 set -euo pipefail
 
@@ -14,24 +14,24 @@ source "${CURRENT_DIR}/config.sh"
 source "${CURRENT_DIR}/utils.sh"
 
 # ====================================================================
-# 定数
+# Constants
 # ====================================================================
 
 readonly BOX_WIDTH=60
 readonly PREVIEW_LINES=50
 
 # ====================================================================
-# 関数定義
+# Function definitions
 # ====================================================================
 
-# 関数名: print_header
-# 説明: ヘッダーボックスを生成
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-#   $3 - ペーンindex
-# 戻り値: 0
-# 出力: ヘッダーボックス
+# Function: print_header
+# Description: Render header box
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+#   $3 - paneindex
+# Returns: 0
+# Output: header box
 print_header() {
     local session_name="$1"
     local window_index="$2"
@@ -47,16 +47,16 @@ print_header() {
     echo
 }
 
-# 関数名: get_pane_info
-# 説明: ペーン基本情報を取得
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-#   $3 - ペーンindex
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
-# 出力: ペーン情報（パイプ区切り）
+# Function: get_pane_info
+# Description: Fetch pane metadata
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+#   $3 - paneindex
+# Returns:
+#   0 - success
+#   1 - error
+# Output: pane info (pipe-delimited)
 get_pane_info() {
     local session_name="$1"
     local window_index="$2"
@@ -75,16 +75,16 @@ get_pane_info() {
     echo "$info"
 }
 
-# 関数名: print_pane_info
-# 説明: ペーン情報を表示
-# 引数:
+# Function: print_pane_info
+# Description: Show pane metadata
+# Args:
 #   $1 - command
 #   $2 - width
 #   $3 - height
 #   $4 - path
 #   $5 - pid
-# 戻り値: 0
-# 出力: フォーマット済みペーン情報
+# Returns: 0
+# Output: formatted pane info
 print_pane_info() {
     local cmd="$1"
     local width="$2"
@@ -100,14 +100,14 @@ print_pane_info() {
     echo
 }
 
-# 関数名: print_pane_content
-# 説明: ペーン内容を表示
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-#   $3 - ペーンindex
-# 戻り値: 0
-# 出力: ペーン内容
+# Function: print_pane_content
+# Description: Show pane content
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+#   $3 - paneindex
+# Returns: 0
+# Output: pane content
 print_pane_content() {
     local session_name="$1"
     local window_index="$2"
@@ -120,18 +120,18 @@ print_pane_content() {
 }
 
 # ====================================================================
-# メイン処理
+# Main
 # ====================================================================
 
-# 関数名: main
-# 説明: ペーンプレビューを生成
-# 引数:
-#   $1 - セッション名
-#   $2 - ウィンドウindex
-#   $3 - ペーンindex
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: main
+# Description: Generate pane preview
+# Args:
+#   $1 - session name
+#   $2 - windowindex
+#   $3 - paneindex
+# Returns:
+#   0 - success
+#   1 - error
 main() {
     local session_name="${1:-}"
     local window_index="${2:-}"
@@ -144,17 +144,14 @@ main() {
 
     log_debug "Generating preview for pane: $session_name:$window_index.$pane_index"
 
-    # ペーン情報取得
     local info
     if ! info=$(get_pane_info "$session_name" "$window_index" "$pane_index"); then
         echo "Error: Pane not found"
         return 1
     fi
 
-    # パース
     IFS='|' read -r idx cmd width height path pid <<< "$info"
 
-    # 描画
     print_header "$session_name" "$window_index" "$idx"
     print_pane_info "$cmd" "$width" "$height" "$path" "$pid"
     print_pane_content "$session_name" "$window_index" "$idx"

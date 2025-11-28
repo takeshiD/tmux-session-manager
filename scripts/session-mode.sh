@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# ファイル名: session-mode.sh
-# 説明: セッション選択モード
-# 依存: config.sh, utils.sh, session-list.sh, preview-session.sh
+# File: session-mode.sh
+# Description: Session selection mode
+# Dependencies: config.sh, utils.sh, session-list.sh, preview-session.sh
 
 set -euo pipefail
 
@@ -14,29 +14,29 @@ source "${CURRENT_DIR}/config.sh"
 source "${CURRENT_DIR}/utils.sh"
 
 # ====================================================================
-# 定数
+# Constants
 # ====================================================================
 
-# ヘッダーは端末幅に収まるよう短く記載（約80文字）
+# Keep the header short so it fits typical terminal widths (~80 chars)
 readonly HEADER="⏎ switch | ␣ detail | C-n new | C-r rename | C-x kill | C-/ preview | q quit"
 readonly PROMPT="🔍 Sessions > "
 
 # ====================================================================
-# 関数定義
+# Function definitions
 # ====================================================================
 
-# 関数名: build_fzf_options
-# 説明: fzfオプションを構築
-# 引数: なし
-# 戻り値: 0
-# 出力: fzfオプション文字列
+# Function: build_fzf_options
+# Description: Build fzf options
+# Args: none
+# Returns: 0
+# Output: fzf option string
 build_fzf_options() {
     local base_options preview_window
 
     base_options=$(get_base_fzf_options)
     preview_window=$(get_preview_window_options)
 
-    # キーバインド設定
+    # Key bindings
     echo "$base_options \
         --header='$HEADER' \
         --prompt='$PROMPT' \
@@ -52,13 +52,13 @@ build_fzf_options() {
         --bind='q:abort'"
 }
 
-# 関数名: switch_to_session
-# 説明: セッション切り替えを実行
-# 引数:
-#   $1 - セッション名
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: switch_to_session
+# Description: Switch to the given session
+# Args:
+#   $1 - session name
+# Returns:
+#   0 - success
+#   1 - error
 switch_to_session() {
     local session_name="$1"
 
@@ -74,17 +74,17 @@ switch_to_session() {
     return 0
 }
 
-# 関数名: process_result
-# 説明: fzf結果を処理
-# 引数:
-#   $1 - fzf結果
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: process_result
+# Description: Handle the fzf result
+# Args:
+#   $1 - fzf result
+# Returns:
+#   0 - success
+#   1 - error
 process_result() {
     local result="$1"
 
-    # 空の場合は何もしない
+    # No-op when empty result (escape)
     if [[ -z "$result" ]]; then
         log_debug "No selection made"
         return 0
@@ -92,13 +92,13 @@ process_result() {
 
     log_debug "Result: $result"
 
-    # become経由の場合、"switch セッション名" の形式
+    # When invoked via become the result format is "switch <session>"
     if [[ "$result" =~ ^switch ]]; then
         local session_name
         session_name=$(echo "$result" | awk '{print $2}')
         switch_to_session "$session_name"
     else
-        # 通常のEnter（セッション名のみ）
+        # Plain enter returns just the session name
         local session_name
         session_name=$(echo "$result" | awk '{print $1}')
         switch_to_session "$session_name"
@@ -106,19 +106,18 @@ process_result() {
 }
 
 # ====================================================================
-# メイン処理
+# Main
 # ====================================================================
 
-# 関数名: main
-# 説明: セッション選択モードのメイン処理
-# 引数: なし
-# 戻り値:
-#   0 - 成功
-#   1 - エラー
+# Function: main
+# Description: Entry point for session selection mode
+# Args: none
+# Returns:
+#   0 - success
+#   1 - error
 main() {
     log_info "Starting session-mode"
 
-    # セッション一覧生成
     local session_list
     if ! session_list=$(bash "${CURRENT_DIR}/session-list.sh"); then
         log_error "Failed to generate session list"
@@ -126,20 +125,17 @@ main() {
         return 1
     fi
 
-    # fzfオプション構築
     local fzf_options
     fzf_options=$(build_fzf_options)
 
     log_debug "fzf options: $fzf_options"
 
-    # fzf起動
     local result
     result=$(echo "$session_list" | eval "fzf $fzf_options") || {
         log_info "User cancelled selection"
         return 0
     }
 
-    # 結果処理
     process_result "$result"
 
     log_info "session-mode finished"
