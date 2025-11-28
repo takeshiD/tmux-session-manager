@@ -4,7 +4,7 @@
 
 tmuxのセッション管理を視覚的かつ効率的に行うためのプラグイン。lazygitのようなポップアップUIを提供し、セッション・ウィンドウ・ペーンの階層的なナビゲーションとリアルタイムプレビューを実現します。
 
-![tmux Session Manager](assets/session-manager.png)
+![tmux Session Manager](assets/tmux-session-manager.png)
 
 ## 特徴
 

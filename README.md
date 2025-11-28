@@ -4,7 +4,7 @@
 
 tmux Session Manager is a popup-based UI that lets you browse and manage tmux sessions, windows, and panes with a workflow similar to lazygit. It offers visual navigation, live previews, and fast switching powered by fzf.
 
-![tmux Session Manager](assets/session-manager.png)
+![tmux Session Manager](assets/tmux-session-manager.png)
 
 ## Features
 
